@@ -33,17 +33,20 @@
                 const select = document.getElementById('productList');
                 let optionsHtml = '';
                 
-                data.list.forEach(item => {
-                    let price = parseFloat(item.price) || 0;
-                    optionsHtml += <option value="${price}">${item.name} (${price.toLocaleString()} сум)</option>;
-                });
-                
-                select.innerHTML = optionsHtml;
-                localStorage.setItem('nukus_cache', optionsHtml);
-                alert('База успешно обновлена!');
+                if (data.list && data.list.length > 0) {
+                    data.list.forEach(item => {
+                        let price = parseFloat(item.price) || 0;
+                        optionsHtml += <option value="${price}">${item.name} (${price.toLocaleString()} сум)</option>;
+                    });
+                    select.innerHTML = optionsHtml;
+                    localStorage.setItem('nukus_cache', optionsHtml);
+                    alert('База успешно обновлена!');
+                } else {
+                    alert('Товары не найдены в CRM');
+                }
             } catch (e) {
                 console.error(e);
-                alert('Ошибка! Убедитесь, что вы в сети офиса и разрешили "Небезопасный контент".');
+                alert('Ошибка связи! Проверь Wi-Fi офиса и настройки "Небезопасного контента"');
             }
         }
 
@@ -53,9 +56,11 @@
         };
 
         function calculate() {
-            const price = parseFloat(document.getElementById('productList').value) || 0;
+            const select = document.getElementById('productList');
+            const price = parseFloat(select.value) || 0;
             const count = parseFloat(document.getElementById('qty').value) || 0;
-            document.getElementById('total-res').innerText = (price * count).toLocaleString() + " сум";
+            const result = price * count;
+            document.getElementById('total-res').innerText = result.toLocaleString() + " сум";
         }
     </script>
 </body>
