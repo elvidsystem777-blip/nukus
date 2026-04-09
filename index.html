@@ -17,7 +17,7 @@
 <body>
     <div class="calc-box">
         <h2>Нукус Смета</h2>
-        <button class="btn-update" onclick="loadFromCRM()">🔄 ОБНОВИТЬ ЦЕНЫ</button>
+        <button class="btn-update" onclick="syncData()">🔄 ОБНОВИТЬ ЦЕНЫ</button>
         <select id="productList"><option>-- Сначала обновите --</option></select>
         <input type="number" id="qty" value="1" min="1">
         <button class="btn-calc" onclick="calculate()">РАССЧИТАТЬ</button>
@@ -25,20 +25,16 @@
     </div>
 
     <script>
-        // 1. Регистрация Service Worker для работы Offline
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('sw.js');
         }
 
-        // 2. Автозагрузка товаров из памяти телефона при открытии
         window.onload = () => {
-            const savedData = localStorage.getItem('nukus_cache');
-            if (savedData) {
-                document.getElementById('productList').innerHTML = savedData;
-            }
+            const saved = localStorage.getItem('nukus_cache');
+            if (saved) document.getElementById('productList').innerHTML = saved;
         };
 
-        async function loadFromCRM() {
+        async function syncData() {
             const url = 'http://192.168.1.223:8080/crm/api/v1/Product?select=name,price';
             const key = 'ec6ddc7304af66bbadebc3b87e9698ab';
             try {
@@ -53,11 +49,10 @@
                 });
                 
                 select.innerHTML = optionsHtml;
-                // Сохраняем результат в память телефона
                 localStorage.setItem('nukus_cache', optionsHtml);
-                alert('База обновлена и сохранена в память!');
+                alert('База обновлена!');
             } catch (e) {
-                alert('Нужен офисный интернет для обновления цен. Но старые цены в памяти доступны!');
+                alert('Ошибка связи! Проверь Wi-Fi и настройки CORS в CRM.');
             }
         }
 
