@@ -49,8 +49,8 @@
         alert('Расчет выполнен!');
     }
 </script>
-</body>
-async function syncData() {
+<script>
+    async function syncData() {
         // Данные для входа в твою CRM
         const url = 'http://192.168.1.223:8080/crm/api/v1/Product?select=name,price';
         const key = '4436f4148eac8597be9f6d80afd244e5';
@@ -80,3 +80,5 @@ async function syncData() {
             alert('Ошибка связи! Проверь, включен ли Wi-Fi офиса и запущена ли CRM.');
         }
     }
+</script>
+</body>
