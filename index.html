@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Нукус Смета 2026</title>
-    <link rel="manifest" href="manifest.json">
     <style>
         body { font-family: sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding-top: 50px; }
         .calc-box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 350px; text-align: center; }
@@ -25,15 +24,6 @@
     </div>
 
     <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
-        }
-
-        window.onload = () => {
-            const saved = localStorage.getItem('nukus_cache');
-            if (saved) document.getElementById('productList').innerHTML = saved;
-        };
-
         async function syncData() {
             const url = 'http://192.168.1.223:8080/crm/api/v1/Product?select=name,price';
             const key = 'ec6ddc7304af66bbadebc3b87e9698ab';
@@ -44,23 +34,28 @@
                 let optionsHtml = '';
                 
                 data.list.forEach(item => {
-                    let purePrice = parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 0;
-                    optionsHtml += <option value="${purePrice}">${item.name} (${purePrice.toLocaleString()} сум)</option>;
+                    let price = parseFloat(item.price) || 0;
+                    optionsHtml += <option value="${price}">${item.name} (${price.toLocaleString()} сум)</option>;
                 });
                 
                 select.innerHTML = optionsHtml;
                 localStorage.setItem('nukus_cache', optionsHtml);
-                alert('База обновлена!');
+                alert('База успешно обновлена!');
             } catch (e) {
-                alert('Ошибка связи! Проверь Wi-Fi и настройки CORS в CRM.');
+                console.error(e);
+                alert('Ошибка! Убедитесь, что вы в сети офиса и разрешили "Небезопасный контент".');
             }
         }
+
+        window.onload = () => {
+            const saved = localStorage.getItem('nukus_cache');
+            if (saved) document.getElementById('productList').innerHTML = saved;
+        };
 
         function calculate() {
             const price = parseFloat(document.getElementById('productList').value) || 0;
             const count = parseFloat(document.getElementById('qty').value) || 0;
-            const result = price * count;
-            document.getElementById('total-res').innerText = result.toLocaleString() + " сум";
+            document.getElementById('total-res').innerText = (price * count).toLocaleString() + " сум";
         }
     </script>
 </body>
