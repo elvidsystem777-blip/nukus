@@ -50,3 +50,33 @@
     }
 </script>
 </body>
+async function syncData() {
+        // Данные для входа в твою CRM
+        const url = 'http://192.168.1.223:8080/crm/api/v1/Product?select=name,price';
+        const key = '4436f4148eac8597be9f6d80afd244e5';
+
+        try {
+            // Стучимся в CRM
+            const response = await fetch(url, { headers: { 'X-Api-Key': key } });
+            const data = await response.json();
+            
+            const select = document.getElementById('productList');
+            let optionsHtml = '';
+
+            // Если товары нашлись, превращаем их в список
+            if (data.list && data.list.length > 0) {
+                data.list.forEach(item => {
+                    let price = parseFloat(item.price) || 0;
+                    // Вот те самые важные ОБРАТНЫЕ кавычки (клавиша Ё)
+                    optionsHtml += `<option value="${price}">${item.name} (${price.toLocaleString()} сум)</option>`;
+                });
+                
+                select.innerHTML = optionsHtml;
+                // Сохраняем в память телефона, чтобы не обновлять каждый раз
+                localStorage.setItem('nukus_cache', optionsHtml);
+                alert('База успешно обновлена!');
+            }
+        } catch (e) {
+            alert('Ошибка связи! Проверь, включен ли Wi-Fi офиса и запущена ли CRM.');
+        }
+    }
