@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Нукус Смета 2026</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body { font-family: sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding-top: 50px; }
+        .calc-box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        .btn-update { background: #27ae60; color: white; padding: 15px; border: none; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 20px; }
+        select, input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        .btn-calc { background: #2980b9; color: white; padding: 15px; border: none; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        #total-res { text-align: center; font-size: 24px; margin-top: 20px; color: #2c3e50; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="calc-box">
+        <h2>Нукус Смета</h2>
+        <button class="btn-update" onclick="loadFromCRM()">🔄 ОБНОВИТЬ ЦЕНЫ</button>
+        <select id="productList"><option>-- Сначала обновите --</option></select>
+        <input type="number" id="qty" value="1" min="1">
+        <button class="btn-calc" onclick="calculate()">РАССЧИТАТЬ</button>
+        <div id="total-res">0 сум</div>
+    </div>
+
+    <script>
+        // 1. Регистрация Service Worker для работы Offline
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+
+        // 2. Автозагрузка товаров из памяти телефона при открытии
+        window.onload = () => {
+            const savedData = localStorage.getItem('nukus_cache');
+            if (savedData) {
+                document.getElementById('productList').innerHTML = savedData;
+            }
+        };
+
+        async function loadFromCRM() {
+            const url = 'http://192.168.1.223:8080/crm/api/v1/Product?select=name,price';
+            const key = 'ec6ddc7304af66bbadebc3b87e9698ab';
+            try {
+                const response = await fetch(url, { headers: { 'X-Api-Key': key } });
+                const data = await response.json();
+                const select = document.getElementById('productList');
+                let optionsHtml = '';
+                
+                data.list.forEach(item => {
+                    let purePrice = parseFloat(String(item.price).replace(/[^0-9.]/g, '')) || 0;
+                    optionsHtml += <option value="${purePrice}">${item.name} (${purePrice.toLocaleString()} сум)</option>;
+                });
+                
+                select.innerHTML = optionsHtml;
+                // Сохраняем результат в память телефона
+                localStorage.setItem('nukus_cache', optionsHtml);
+                alert('База обновлена и сохранена в память!');
+            } catch (e) {
+                alert('Нужен офисный интернет для обновления цен. Но старые цены в памяти доступны!');
+            }
+        }
+
+        function calculate() {
+            const price = parseFloat(document.getElementById('productList').value) || 0;
+            const count = parseFloat(document.getElementById('qty').value) || 0;
+            const result = price * count;
+            document.getElementById('total-res').innerText = result.toLocaleString() + " сум";
+        }
+    </script>
+</body>
+</html>
