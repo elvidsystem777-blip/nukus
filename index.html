@@ -35,3 +35,19 @@
 
 </body>
 </html>
+<script>
+    // 1. Создаем "заглушку" для первой ошибки (строка 21)
+    async function syncData() {
+        alert('Связываюсь с CRM... (этот блок мы напишем следующим)');
+    }
+
+    // 2. Создаем функцию для второй ошибки (строка 31)
+    function calculate() {
+        const p = parseFloat(document.getElementById('productList').value) || 0;
+        const q = parseFloat(document.getElementById('qty').value) || 0;
+        const result = p * q;
+        
+        document.getElementById('total-res').innerText = result.toLocaleString() + ' сум';
+        alert('Расчет выполнен!');
+    }
+</script>
