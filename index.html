@@ -5,63 +5,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Нукус Смета 2026</title>
     <style>
-        body { font-family: sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding-top: 50px; }
-        .calc-box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 350px; text-align: center; }
-        .btn-update { background: #27ae60; color: white; padding: 15px; border: none; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; margin-bottom: 20px; }
-        select, input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        body { font-family: sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
+        .calc-box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        .btn-update { background: #27ae60; color: white; padding: 15px; border: none; width: 100%; border-radius: 8px; cursor: pointer; margin-bottom: 10px; font-weight: bold; }
+        select, input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         .btn-calc { background: #2980b9; color: white; padding: 15px; border: none; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; }
         #total-res { text-align: center; font-size: 24px; margin-top: 20px; color: #2c3e50; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="calc-box">
-        <h2>Нукус Смета</h2>
-        <button class="btn-update" onclick="syncData()">🔄 ОБНОВИТЬ ЦЕНЫ</button>
-        <select id="productList"><option>-- Сначала обновите --</option></select>
-        <input type="number" id="qty" value="1" min="1">
-        <button class="btn-calc" onclick="calculate()">РАССЧИТАТЬ</button>
-        <div id="total-res">0 сум</div>
-    </div>
 
-    <script>
-        async function syncData() {
-            const url = 'http://192.168.1.223:8080/crm/api/v1/Product?select=name,price';
-            const key = 'ec6ddc7304af66bbadebc3b87e9698ab';
-            try {
-                const response = await fetch(url, { headers: { 'X-Api-Key': key } });
-                const data = await response.json();
-                const select = document.getElementById('productList');
-                let optionsHtml = '';
-                
-                if (data.list && data.list.length > 0) {
-                    data.list.forEach(item => {
-                        let price = parseFloat(item.price) || 0;
-                        optionsHtml += <option value="${price}">${item.name} (${price.toLocaleString()} сум)</option>;
-                    });
-                    select.innerHTML = optionsHtml;
-                    localStorage.setItem('nukus_cache', optionsHtml);
-                    alert('База успешно обновлена!');
-                } else {
-                    alert('Товары не найдены в CRM');
-                }
-            } catch (e) {
-                console.error(e);
-                alert('Ошибка связи! Проверь Wi-Fi офиса и настройки "Небезопасного контента"');
-            }
-        }
+<div class="calc-box">
+    <h2>Нукус Смета</h2>
+    <button class="btn-update" onclick="syncData()">🔄 ОБНОВИТЬ ЦЕНЫ</button>
+    
+    <select id="productList">
+        <option>-- Сначала обновите --</option>
+    </select>
+    
+    <input type="number" id="qty" value="1" min="1" placeholder="Количество">
+    
+    <button class="btn-calc" onclick="calculate()">РАССЧИТАТЬ</button>
+    
+    <div id="total-res">0 сум</div>
+</div>
 
-        window.onload = () => {
-            const saved = localStorage.getItem('nukus_cache');
-            if (saved) document.getElementById('productList').innerHTML = saved;
-        };
+<script>
+    // 1. Ссылка на твою CRM (проверь IP и порт!)
+    const url = 'http://192.168.1.223:8080/crm/api/v1/Product?select=name,price';
+    const key = 'ec6ddc7304af66bbadebc3b87e9698ab';
 
-        function calculate() {
+    // 2. Функция загрузки данных
+    async function syncData() {
+        try {
+            const response = await fetch(url, { headers: { 'X-Api-Key': key } });
+            const data = await response.json();
             const select = document.getElementById('productList');
-            const price = parseFloat(select.value) || 0;
-            const count = parseFloat(document.getElementById('qty').value) || 0;
-            const result = price * count;
-            document.getElementById('total-res').innerText = result.toLocaleString() + " сум";
+            let optionsHtml = '';
+
+            if (data.list && data.list.length > 0) {
+                data.list.forEach(item => {
+                    let price = parseFloat(item.price) || 0;
+                    // ВАЖНО: Тут используются ОБРАТНЫЕ кавычки (клавиша Ё)
+                    optionsHtml += <option value="${price}">${item.name} (${price.toLocaleString()} сум)</option>;
+                });
+                
+                select.innerHTML = optionsHtml;
+                localStorage.setItem('nukus_cache', optionsHtml);
+                alert('База успешно обновлена!');
+            } else {
+                alert('Товары не найдены в CRM');
+            }
+        } catch (e) {
+            console.error(e);
+            alert('Ошибка! Убедитесь, что вы в сети офиса и разрешили "Небезопасный контент" в настройках браузера.');
         }
-    </script>
+    }
+
+    // 3. Автозагрузка цен из памяти телефона при открытии
+    window.onload = () => {
+        const saved = localStorage.getItem('nukus_cache');
+        if (saved) {
+            document.getElementById('productList').innerHTML = saved;
+        }
+    };
+
+    // 4. Сама формула расчета
+    function calculate() {
+        const price = parseFloat(document.getElementById('productList').value) || 0;
+        const count = parseFloat(document.getElementById('qty').value) || 0;
+        const result = price * count;
+        
+        document.getElementById('total-res').innerText = result.toLocaleString() + ' сум';
+    }
+</script>
+
 </body>
 </html>
