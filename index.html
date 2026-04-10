@@ -53,7 +53,7 @@
                 data.list.forEach(item => {
                     let price = parseFloat(item.price) || 0;
                     // Используем обратные кавычки  для формирования строки
-                    optionsHtml += <option value="${price}">${item.name} (${price.toLocaleString()} сум)</option>`;
+                    optionsHtml += `<option value="${price}">${item.name} (${price.toLocaleString()} сум)</option>`;
                 });
                 
                 select.innerHTML = optionsHtml;
