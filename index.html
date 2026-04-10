@@ -32,52 +32,58 @@
     
     <div id="total-res">0 сум</div>
 <script>
-    // 1. Создаем "заглушку" для первой ошибки (строка 21)
+    // 1. Функция синхронизации с CRM
     async function syncData() {
-        alert('Связываюсь с CRM... (этот блок мы напишем следующим)');
-    }
-
-    // 2. Создаем функцию для второй ошибки (строка 31)
-    function calculate() {
-        const p = parseFloat(document.getElementById('productList').value) || 0;
-        const q = parseFloat(document.getElementById('qty').value) || 0;
-        const result = p * q;
-        
-        document.getElementById('total-res').innerText = result.toLocaleString() + ' сум';
-        alert('Расчет выполнен!');
-    }
-</script>
-<script>
-    async function syncData() {
-        // Данные для входа в твою CRM
-        const url = 'http://192.168.1.223:8080/crm/api/v1/cProduct?select=name,price';
-        const key = '4436f4148eac8597be9f6d80afd244e5';
+        // Используем прямой путь к Product без знака #, как требует API
+        const url = 'http://192.168.1.223:8080/crm/api/v1/Product?select=name,price';
+        const key = '4436f4148eac8597be9f6d80afd244e5'; // Твой ключ для calc_user
 
         try {
-            // Стучимся в CRM
-            const response = await fetch(url, { headers: { 'X-Api-Key': key } });
-            const data = await response.json();
+            const response = await fetch(url, { 
+                headers: { 'X-Api-Key': key } 
+            });
             
+            if (!response.ok) throw new Error('Ошибка сервера');
+
+            const data = await response.json();
             const select = document.getElementById('productList');
             let optionsHtml = '';
 
-            // Если товары нашлись, превращаем их в список
             if (data.list && data.list.length > 0) {
                 data.list.forEach(item => {
                     let price = parseFloat(item.price) || 0;
-                    // Вот те самые важные ОБРАТНЫЕ кавычки (клавиша Ё)
-                    optionsHtml += `<option value="${price}">${item.name} (${price.toLocaleString()} сум)</option>`;
+                    // Используем обратные кавычки  для формирования строки
+                    optionsHtml += <option value="${price}">${item.name} (${price.toLocaleString()} сум)</option>`;
                 });
                 
                 select.innerHTML = optionsHtml;
-                // Сохраняем в память телефона, чтобы не обновлять каждый раз
-                localStorage.setItem('nukus_cache', optionsHtml);
-                alert('База успешно обновлена!');
+                // Сохраняем в память браузера, чтобы работало на Wi-Fi у торговых
+                localStorage.setItem('nukus_cache', optionsHtml); 
+                alert('База товаров успешно обновлена!');
             }
         } catch (e) {
-            alert('Ошибка связи! Проверь, включен ли Wi-Fi офиса и запущена ли CRM.');
+            console.error(e);
+            alert('Ошибка связи! Убедись, что ты в сети офиса и разрешила "Небезопасный контент" в браузере.');
         }
     }
+
+    // 2. Функция расчета
+    function calculate() {
+        const select = document.getElementById('productList');
+        const price = parseFloat(select.value) || 0;
+        const qty = parseFloat(document.getElementById('qty').value) || 0;
+        
+        const total = price * qty;
+        document.getElementById('total-res').innerText = total.toLocaleString() + ' сум';
+    }
+
+    // 3. Автозагрузка при открытии страницы
+    window.onload = () => {
+        const savedData = localStorage.getItem('nukus_cache');
+        if (savedData) {
+            document.getElementById('productList').innerHTML = savedData;
+        }
+    };
 </script>
 </body>
 </div>
