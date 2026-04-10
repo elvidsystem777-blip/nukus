@@ -1,90 +1,116 @@
-<!DOCTYPE html>
+[10.04.2026 14:31] Nito: <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Нукус Смета 2026</title>
+    <title>ELVID Смета 2026</title>
     <style>
-        body { font-family: sans-serif; background: #f4f7f6; display: flex; justify-content: center; padding: 20px; }
-        .calc-box { background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        .btn-update { background: #27ae60; color: white; padding: 15px; border: none; width: 100%; border-radius: 8px; cursor: pointer; margin-bottom: 15px; font-weight: bold; }
-        select, input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
-        .btn-calc { background: #2980b9; color: white; padding: 15px; border: none; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        #total-res { text-align: center; font-size: 24px; margin-top: 20px; color: #2c3e50; font-weight: bold; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; padding: 15px; display: flex; justify-content: center; }
+        .calc-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
+        h2 { text-align: center; color: #2c3e50; margin-bottom: 20px; border-bottom: 2px solid #28a745; padding-bottom: 10px; }
+        .row { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        select, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        .btn-add { background: #28a745; color: white; border: none; width: 100%; padding: 15px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; margin-bottom: 20px; }
+        .btn-add:hover { background: #218838; }
+        .smeta-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .smeta-table th { text-align: left; border-bottom: 2px solid #eee; padding: 10px 5px; color: #666; font-size: 14px; }
+        .smeta-table td { padding: 10px 5px; border-bottom: 1px solid #eee; font-size: 14px; }
+        .total-box { margin-top: 20px; padding: 15px; background: #e8f0fe; border-radius: 8px; text-align: right; }
+        .total-amount { font-size: 24px; font-weight: bold; color: #d93025; }
+        .btn-clear { background: none; border: 1px solid #ccc; color: #888; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-top: 15px; }
     </style>
 </head>
 <body>
 
-<div class="calc-box">
-    <h2>Нукус Смета</h2>
+<div class="calc-card">
+    <h2>Смета ELVID</h2>
     
-    <button class="btn-update" onclick="syncData()">🔄 ОБНОВИТЬ ЦЕНЫ</button>
-    
-    <label>Выберите товар:</label>
-    <select id="productList">
-        <option value="0">-- Сначала обновите --</option>
-    </select>
-    
-    <label>Количество:</label>
-    <input type="number" id="qty" value="1" min="1">
-    
-    <button class="btn-calc" onclick="calculate()">РАССЧИТАТЬ</button>
-    
-    <div id="total-res">0 сум</div>
-<script>
-    // 1. Функция синхронизации с CRM
-    async function syncData() {
-        // Используем прямой путь к Product без знака #, как требует API
-        const url = 'http://192.168.1.223:8080/crm/api/v1/cProduct?select=name,price';
-        const key = '4436f4148eac8597be9f6d80afd244e5'; // Твой ключ для calc_user
+    <div class="row">
+        <label>Выберите оборудование:</label>
+        <select id="prodSelect"></select>
+    </div>
 
-        try {
-            const response = await fetch(url, { 
-                headers: { 'X-Api-Key': key } 
-            });
-            
-            if (!response.ok) throw new Error('Ошибка сервера');
+    <div class="row">
+        <label>Количество (шт):</label>
+        <input type="number" id="qtyInp" value="1" min="1">
+    </div>
 
-            const data = await response.json();
-            const select = document.getElementById('productList');
-            let optionsHtml = '';
+    <button class="btn-add" onclick="addItem()">➕ Добавить в смету</button>
 
-            if (data.list && data.list.length > 0) {
-                data.list.forEach(item => {
-                    let price = parseFloat(item.price) || 0;
-                    // Используем обратные кавычки  для формирования строки
-                    optionsHtml += `<option value="${price}">${item.name} (${price.toLocaleString()} сум)</option>`;
-                });
-                
-                select.innerHTML = optionsHtml;
-                // Сохраняем в память браузера, чтобы работало на Wi-Fi у торговых
-                localStorage.setItem('nukus_cache', optionsHtml); 
-                alert('База товаров успешно обновлена!');
-            }
-        } catch (e) {
-            console.error(e);
-            alert('Ошибка связи! Убедись, что ты в сети офиса и разрешила "Небезопасный контент" в браузере.');
-        }
-    }
+    <table class="smeta-table">
+        <thead>
+            <tr>
+                <th>Товар</th>
+                <th>Кол-во</th>
+                <th>Сумма</th>
+            </tr>
+        </thead>
+        <tbody id="smetaBody"></tbody>
+    </table>
 
-    // 2. Функция расчета
-    function calculate() {
-        const select = document.getElementById('productList');
-        const price = parseFloat(select.value) || 0;
-        const qty = parseFloat(document.getElementById('qty').value) || 0;
-        
-        const total = price * qty;
-        document.getElementById('total-res').innerText = total.toLocaleString() + ' сум';
-    }
+    <div class="total-box">
+        <div style="color: #1a73e8; font-size: 16px;">ИТОГО К ОПЛАТЕ:</div>
+        <div class="total-amount" id="totalSum">0 сум</div>
+    </div>
 
-    // 3. Автозагрузка при открытии страницы
-    window.onload = () => {
-        const savedData = localStorage.getItem('nukus_cache');
-        if (savedData) {
-            document.getElementById('productList').innerHTML = savedData;
-        }
-    };
-</script>
-</body>
+    <button class="btn-clear" onclick="clearList()">Очистить список</button>
 </div>
+
+<script>
+    // ТВОЙ СПИСОК ТОВАРОВ (добавлен на основе твоего фото c2058b6e)
+    const data = [
+        { n: "IPC-T320H-D; 2.8mm", p: 180000 },
+        { n: "IPC-D121H; 2MP", p: 350000 },
+        { n: "IPC-D120H; 2MP", p: 350000 },
+        { n: "IPC-B660HA-LZ", p: 1730000 },
+        { n: "IPC-B440H; 4MP", p: 650000 },
+        { n: "IPC-B320H-D; 2.8mm", p: 180000 },
+        { n: "IPC-B150H; 5MP", p: 500000 },
+        { n: "IPC-B149HA; 4MP", p: 700000 },
+        { n: "IPC-B140HA; 4MP", p: 500000 },
+        { n: "IPC-B141H; 4MP", p: 550000 },
+        { n: "IPC-B129HA; 2MP", p: 500000 }
+    ];
+
+    let basket = [];
+
+    function fillList() {
+        const s = document.getElementById('prodSelect');
+        data.sort((a,b) => a.n.localeCompare(b.n)).forEach(i => {
+            let o = document.createElement('option');
+            o.value = i.p;
+            o.text = i.n;
+            s.add(o);
+        });
+    }
+
+    function addItem() {
+        const s = document.getElementById('prodSelect');
+        const name = s.options[s.selectedIndex].text;
+        const price = parseFloat(s.value);
+        const qty = parseInt(document.getElementById('qtyInp').value) || 0;
+
+        if (qty > 0) {
+            basket.push({ name, qty, sum: price * qty });
+            render();
+        }
+    }
+[10.04.2026 14:31] Nito: function render() {
+        const b = document.getElementById('smetaBody');
+        let h = '', t = 0;
+        basket.forEach(i => {
+            h += <tr><td>${i.name}</td><td>${i.qty}</td><td>${i.sum.toLocaleString()}</td></tr>;
+            t += i.sum;
+        });
+        b.innerHTML = h;
+        document.getElementById('totalSum').innerText = t.toLocaleString() + ' сум';
+    }
+
+    function clearList() { basket = []; render(); }
+
+    fillList();
+</script>
+
+</body>
 </html>
