@@ -3,81 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ELVID Смета 2026</title>
+    <title>ELVID Калькулятор</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; padding: 15px; display: flex; justify-content: center; }
-        .calc-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
-        h2 { text-align: center; color: #2c3e50; margin-bottom: 20px; border-bottom: 2px solid #28a745; padding-bottom: 10px; }
+        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; display: flex; justify-content: center; }
+        .box { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { text-align: center; color: #1a73e8; border-bottom: 2px solid #28a745; padding-bottom: 10px; }
         .row { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
         select, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
-        .btn-add { background: #28a745; color: white; border: none; width: 100%; padding: 15px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; margin-bottom: 20px; }
-        .btn-add:hover { background: #218838; }
-        .smeta-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .smeta-table th { text-align: left; border-bottom: 2px solid #eee; padding: 10px 5px; color: #666; font-size: 14px; }
-        .smeta-table td { padding: 10px 5px; border-bottom: 1px solid #eee; font-size: 14px; }
-        .total-box { margin-top: 20px; padding: 15px; background: #e8f0fe; border-radius: 8px; text-align: right; }
-        .total-amount { font-size: 24px; font-weight: bold; color: #d93025; }
-        .btn-clear { background: none; border: 1px solid #ccc; color: #888; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-top: 15px; }
+        .btn-add { background: #28a745; color: white; border: none; width: 100%; padding: 15px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .btn-add:active { background: #1e7e34; }
+        .res-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .res-table th, .res-table td { text-align: left; padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+        .total-area { margin-top: 20px; padding: 15px; background: #e8f0fe; border-radius: 8px; text-align: right; }
+        .total-val { font-size: 22px; font-weight: bold; color: #d93025; }
+        .btn-reset { background: none; border: 1px solid #ccc; color: #999; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-top: 15px; }
     </style>
 </head>
 <body>
 
-<div class="calc-card">
+<div class="box">
     <h2>Смета ELVID</h2>
     
     <div class="row">
-        <label>Выберите оборудование:</label>
-        <select id="prodSelect"></select>
+        <label>Товар:</label>
+        <select id="pSelect"></select>
     </div>
 
     <div class="row">
-        <label>Количество (шт):</label>
-        <input type="number" id="qtyInp" value="1" min="1">
+        <label>Количество:</label>
+        <input type="number" id="qInput" value="1" min="1">
     </div>
 
-    <button class="btn-add" onclick="addItem()">➕ Добавить в смету</button>
+    <button class="btn-add" onclick="doAdd()">➕ Добавить</button>
 
-    <table class="smeta-table">
+    <table class="res-table">
         <thead>
-            <tr>
-                <th>Товар</th>
-                <th>Кол-во</th>
-                <th>Сумма</th>
-            </tr>
+            <tr><th>Название</th><th>Кол-во</th><th>Сумма</th></tr>
         </thead>
-        <tbody id="smetaBody"></tbody>
+        <tbody id="resBody"></tbody>
     </table>
 
-    <div class="total-box">
-        <div style="color: #1a73e8; font-size: 16px;">ИТОГО К ОПЛАТЕ:</div>
-        <div class="total-amount" id="totalSum">0 сум</div>
+    <div class="total-area">
+        <div style="color: #1a73e8;">ИТОГО:</div>
+        <div class="total-val" id="finalSum">0 сум</div>
     </div>
 
-    <button class="btn-clear" onclick="clearList()">Очистить список</button>
+    <button class="btn-reset" onclick="doReset()">Сбросить всё</button>
 </div>
 
 <script>
-    // ТВОЙ СПИСОК ТОВАРОВ (добавлен на основе твоего фото c2058b6e)
-    const data = [
+    // Тестовый набор данных (проверим на них работу кнопок)
+    const items = [
         { n: "IPC-T320H-D; 2.8mm", p: 180000 },
         { n: "IPC-D121H; 2MP", p: 350000 },
-        { n: "IPC-D120H; 2MP", p: 350000 },
-        { n: "IPC-B660HA-LZ", p: 1730000 },
-        { n: "IPC-B440H; 4MP", p: 650000 },
-        { n: "IPC-B320H-D; 2.8mm", p: 180000 },
-        { n: "IPC-B150H; 5MP", p: 500000 },
-        { n: "IPC-B149HA; 4MP", p: 700000 },
-        { n: "IPC-B140HA; 4MP", p: 500000 },
-        { n: "IPC-B141H; 4MP", p: 550000 },
-        { n: "IPC-B129HA; 2MP", p: 500000 }
+        { n: "IPC-B660HA-LZ", p: 1730000 }
     ];
 
-    let basket = [];
+    let cart = [];
 
-    function fillList() {
-        const s = document.getElementById('prodSelect');
-        data.sort((a,b) => a.n.localeCompare(b.n)).forEach(i => {
+    // Загружаем товары в список
+    function start() {
+        const s = document.getElementById('pSelect');
+        items.forEach(i => {
             let o = document.createElement('option');
             o.value = i.p;
             o.text = i.n;
@@ -85,31 +73,38 @@
         });
     }
 
-    function addItem() {
-        const s = document.getElementById('prodSelect');
+    // Кнопка "Добавить"
+    function doAdd() {
+        const s = document.getElementById('pSelect');
         const name = s.options[s.selectedIndex].text;
         const price = parseFloat(s.value);
-        const qty = parseInt(document.getElementById('qtyInp').value) || 0;
+        const qty = parseInt(document.getElementById('qInput').value) || 0;
 
         if (qty > 0) {
-            basket.push({ name, qty, sum: price * qty });
-            render();
+            cart.push({ name, qty, sum: price * qty });
+            show();
         }
     }
-function render() {
-        const b = document.getElementById('smetaBody');
-        let h = '', t = 0;
-        basket.forEach(i => {
+
+    // Обновление таблицы и суммы
+    function show() {
+        const b = document.getElementById('resBody');
+        let h = '', total = 0;
+        cart.forEach(i => {
             h += <tr><td>${i.name}</td><td>${i.qty}</td><td>${i.sum.toLocaleString()}</td></tr>;
-            t += i.sum;
+            total += i.sum;
         });
         b.innerHTML = h;
-        document.getElementById('totalSum').innerText = t.toLocaleString() + ' сум';
+        document.getElementById('finalSum').innerText = total.toLocaleString() + ' сум';
     }
 
-    function clearList() { basket = []; render(); }
+    // Кнопка "Сбросить"
+    function doReset() {
+        cart = [];
+        show();
+    }
 
-    fillList();
+    start();
 </script>
 
 </body>
