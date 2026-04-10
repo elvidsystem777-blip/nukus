@@ -35,7 +35,7 @@
     // 1. Функция синхронизации с CRM
     async function syncData() {
         // Используем прямой путь к Product без знака #, как требует API
-        const url = 'http://192.168.1.223:8080/crm/api/v1/Product?select=name,price';
+        const url = 'http://192.168.1.223:8080/crm/api/v1/cProduct?select=name,price';
         const key = '4436f4148eac8597be9f6d80afd244e5'; // Твой ключ для calc_user
 
         try {
