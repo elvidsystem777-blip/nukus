@@ -3,108 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ELVID Калькулятор</title>
+    <title>ELVID Смета 2026</title>
     <style>
         body { font-family: sans-serif; background: #f0f2f5; padding: 20px; display: flex; justify-content: center; }
-        .box { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h2 { text-align: center; color: #1a73e8; border-bottom: 2px solid #28a745; padding-bottom: 10px; }
+        .calc-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+        h2 { text-align: center; color: #1a73e8; border-bottom: 2px solid #28a745; padding-bottom: 10px; margin-top: 0; }
         .row { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
         select, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
-        .btn-add { background: #28a745; color: white; border: none; width: 100%; padding: 15px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
-        .btn-add:active { background: #1e7e34; }
-        .res-table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        .btn-add { background: #28a745; color: white; border: none; width: 100%; padding: 15px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .btn-add:active { background: #1e7e34; transform: scale(0.98); }
+        .res-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         .res-table th, .res-table td { text-align: left; padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
-        .total-area { margin-top: 20px; padding: 15px; background: #e8f0fe; border-radius: 8px; text-align: right; }
-        .total-val { font-size: 22px; font-weight: bold; color: #d93025; }
-        .btn-reset { background: none; border: 1px solid #ccc; color: #999; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-top: 15px; }
+        .total-box { margin-top: 20px; padding: 15px; background: #e8f0fe; border-radius: 8px; text-align: right; }
+        .total-val { font-size: 24px; font-weight: bold; color: #d93025; }
+        .btn-reset { background: none; border: 1px solid #ccc; color: #999; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-top: 15px; font-size: 12px; }
     </style>
 </head>
 <body>
 
-<div class="box">
+<div class="calc-card">
     <h2>Смета ELVID</h2>
     
     <div class="row">
-        <label>Товар:</label>
+        <label>Выберите оборудование:</label>
         <select id="pSelect"></select>
     </div>
 
     <div class="row">
-        <label>Количество:</label>
+        <label>Количество (шт):</label>
         <input type="number" id="qInput" value="1" min="1">
     </div>
 
-    <button class="btn-add" onclick="doAdd()">➕ Добавить</button>
+    <button class="btn-add" onclick="addItem()">➕ Добавить в смету</button>
 
     <table class="res-table">
         <thead>
-            <tr><th>Название</th><th>Кол-во</th><th>Сумма</th></tr>
+            <tr><th>Товар</th><th>Кол-во</th><th>Сумма</th></tr>
         </thead>
         <tbody id="resBody"></tbody>
     </table>
 
-    <div class="total-area">
-        <div style="color: #1a73e8;">ИТОГО:</div>
+    <div class="total-box">
+        <div style="color: #1a73e8; font-size: 14px; font-weight: bold;">ИТОГО К ОПЛАТЕ:</div>
         <div class="total-val" id="finalSum">0 сум</div>
     </div>
 
-    <button class="btn-reset" onclick="doReset()">Сбросить всё</button>
+    <button class="btn-reset" onclick="clearAll()">Очистить список</button>
 </div>
 
 <script>
-    // Тестовый набор данных (проверим на них работу кнопок)
-    const items = [
-        { n: "IPC-T320H-D; 2.8mm", p: 180000 },
-        { n: "IPC-D121H; 2MP", p: 350000 },
-        { n: "IPC-B660HA-LZ", p: 1730000 }
+    // ТЕСТОВЫЙ СПИСОК (сначала проверим работу кнопок)
+    const products = [
+        { name: "IPC-T320H-D; 2.8mm", price: 180000 },
+        { name: "IPC-D121H; 2MP", price: 350000 },
+        { name: "IPC-B660HA-LZ", price: 1730000 }
     ];
 
     let cart = [];
 
-    // Загружаем товары в список
-    function start() {
+    // 1. Наполняем список при запуске
+    function init() {
         const s = document.getElementById('pSelect');
-        items.forEach(i => {
-            let o = document.createElement('option');
-            o.value = i.p;
-            o.text = i.n;
-            s.add(o);
+        products.forEach(item => {
+            let opt = document.createElement('option');
+            opt.value = item.price;
+            opt.text = item.name + " (" + item.price.toLocaleString() + " сум)";
+            s.add(opt);
         });
     }
 
-    // Кнопка "Добавить"
-    function doAdd() {
+    // 2. Кнопка "Добавить"
+    function addItem() {
         const s = document.getElementById('pSelect');
-        const name = s.options[s.selectedIndex].text;
+        const name = s.options[s.selectedIndex].text.split(" (")[0];
         const price = parseFloat(s.value);
         const qty = parseInt(document.getElementById('qInput').value) || 0;
 
         if (qty > 0) {
-            cart.push({ name, qty, sum: price * qty });
-            show();
+            cart.push({ n: name, q: qty, s: price * qty });
+            render();
         }
     }
 
-    // Обновление таблицы и суммы
-    function show() {
+    // 3. Обновление таблицы
+    function render() {
         const b = document.getElementById('resBody');
         let h = '', total = 0;
         cart.forEach(i => {
-            h += <tr><td>${i.name}</td><td>${i.qty}</td><td>${i.sum.toLocaleString()}</td></tr>;
-            total += i.sum;
+            h += "<tr><td>" + i.n + "</td><td>" + i.q + " шт.</td><td>" + i.s.toLocaleString() + " сум</td></tr>";
+            total += i.s;
         });
         b.innerHTML = h;
-        document.getElementById('finalSum').innerText = total.toLocaleString() + ' сум';
+        document.getElementById('finalSum').innerText = total.toLocaleString() + " сум";
     }
-
-    // Кнопка "Сбросить"
-    function doReset() {
+    // 4. Очистка
+    function clearAll() {
         cart = [];
-        show();
+        render();
     }
 
-    start();
+    init();
 </script>
 
 </body>
