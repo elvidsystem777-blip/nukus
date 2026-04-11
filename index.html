@@ -18,10 +18,26 @@
         .total-box { margin-top: 20px; padding: 15px; background: #e8f0fe; border-radius: 8px; text-align: right; }
         .total-val { font-size: 24px; font-weight: bold; color: #d93025; }
         .btn-reset { background: none; border: 1px solid #ccc; color: #999; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-top: 15px; font-size: 12px; }
+        body { display: flex; } /* Это заставит сайдбар и карту встать в ряд */
+        .sidebar { 
+            width: 250px; 
+            background: #fff; 
+            padding: 15px; 
+            border-right: 1px solid #ddd;
+            height: 100vh;
+        }
+        .cat-item { 
+            padding: 10px; 
+            cursor: pointer; 
+            border-bottom: 1px solid #eee; 
+        }
+        .cat-item:hover { background: #f0f2f5; }
+        .active { color: #1a73e8; font-weight: bold; border-left: 4px solid #1a73e8; }
     </style>
 </head>
 <body>
-
+<div class= "sidebar" id="sidebar">
+    </div>
 <div class="calc-card">
     <h2>Смета ELVID</h2>
     
@@ -54,106 +70,116 @@
 
 <script>
     // ТЕСТОВЫЙ СПИСОК (сначала проверим работу кнопок)
-    const products = [
-        { name: "(BNC) Video and S-Video to VGA converter", price: 250000 },
-        { name: "HDMI 1,5 m", price: 20000},
-        { name: "HDMI 10 m", price: 110000},
-        { name: "HDMI 15 m", price: 150000},
-        { name: "HDMI 3 m", price: 30000},
-        { name: "HDMI 5 m", price: 45000},
-        { name: "HDMI extender 30 M (пассивный)", price:130000},
-        { name: "HDMI extender 60 M (активный) HDTV-60 M", price:550000},
-        { name: "HDMI splitter 1x2; 1080P 3D HDMI splitter ver 1,4", price:130000},
-        { name: "VGA 1,5 m", price:20000},
-        { name: "Аудиоколонки 3W-6W настенные", price:120000},
-        { name: "Аудиоколонки 6W потолочный", price:120000},
-        { name: "Аудиоколонки GOLDEN FALCON настенные", price:120000},
-        { name: "Микрофон для усилителя; модель: YS-36", price:250000},
-        { name: "Регулятор громкости 3W; Модель: M-602", price:80000},
-        { name: "Усилители 150W; Модель: MP3-150U", price:2100000},
-        { name: "AC/DC adapter 2A/12V; Model: 298-38; Блок питания уличный", price:70000},
-        { name: "Блок питания 10А/12В металл, сеточный", price:110000},
-        { name: "Блок питания 12В/5А пластмассовый. Смарт", price:70000},
-        { name: "Блок питания 15А/12В металл, сеточный", price:150000},
-        { name: "Блок питания 16А/12В металл, сеточный, корпус вытянутый тонкий", price:150000},
-        { name: "Блок питания 2А/12В UPS; Модель: Ups-912", price:70000},
-        { name: "Блок питания 5А/12В металл, сеточный", price:70000},
-        { name: "IKS-2044BTH-PH/W Bullet-Turret; 4Mp; Wi-Fi Kit", price:1500000},
-        // --- EZVIZ КАМЕРЫ ---
-        { name: "EZVIZ C8C 1080; 1080P; Уличная; 360 поворотная; Colorvu", price: 750000 },
-        { name: "EZVIZ CS-H5; 3Mp; 4G, Уличная", price: 670000 },
-        { name: "EZVIZ CS-H6C; 1080P; 2,8 мм; ИК 10 м; Внутренняя; Поворотная", price: 450000 },
-        { name: "EZVIZ H1C; 1080P; Внутренняя", price: 400000 },
-        { name: "EZVIZ H3C 1080 color; 1080P; 2,8 мм; Ночное цветное видение до 20 м; Уличная", price: 600000 },
-        { name: "EZVIZ H3C 1080; 1080P; 2,8 мм; ИК 30 м; Внутренняя", price: 500000 },
-        { name: "EZVIZ H8C 3Mp; 4 мм; Поворотная 360; ИК 30 м; Уличная", price: 850000 },
-        { name: "EZVIZ H8с 3Mp; 4G; Поворотная", price: 1000000 },
-        { name: "EZVIZ; CS-E4p; 6MP; 360 рыбий глаз", price: 1300000 },
-        // --- IPC КАМЕРЫ ---
-        { name: "DS-2CD2463G2-I; 2.8mm; 6mp; Hikvision; (сигарет пачка)", price: 750000 },
-        { name: "DS-KIS612-P", price: 2400000 },
-        { name: "IPC-B120HA; 2 MP; 2,8 мм; ИК 30 м; Уличная", price: 320000 },
-        { name: "IPC-B121H; 2 MP; 2,8 мм; ИК 30 м; Уличная", price: 350000 },
-        { name: "IPC-B129H; 2 MP; ColorVu; 2,8 мм; ИК 30 м; Уличная", price: 550000 },
-        { name: "IPC-B129HA; 2 MP; 2,8 мм; ИК 30 м; Уличная; Colorvu", price: 500000 },
-        { name: "IPC-B140H; 4 MP; 2,8 мм; ИК 30 м; Уличная", price: 550000 },
-        { name: "IPC-B140HА; 4 MP; 2,8 мм; ИК 30 м; Уличная", price: 500000 },
-        { name: "IPC-B149HA; 4 MP; 2,8 мм; Ночь 30 м; Уличная; Colorvu", price: 700000 },
-        { name: "IPC-B150H; 5 MP; 2,8 мм; ИК 30 м; Уличная", price: 500000 },
-        { name: "IPC-B320H-D; 2 MP; 2,8 мм; ИК 20 м; Уличная", price: 180000 },
-        { name: "IPC-B440H; 4 MP; 4 мм; ИК 50 м; Уличная", price: 650000 },
-        { name: "IPC-B660HA-LZU/SL; 6 MP; 2.8-12; двойная подсветка MD 2.0; варифокальная; звуковая; двухсторонняя связь", price: 1730000 },
-        { name: "IPC-D120H; 2 MP; 2,8 мм; ИК 30 м; Антивандальная", price: 350000 },
-        { name: "IPC-D121H; 2 MP; 2,8 мм; ИК 30 м; Антивандальная", price: 350000 },
-        { name: "IPC-T320H-D; 2 MP; 2,8 мм; ИК 20 м; Потолочная", price: 180000 },
-        // --- Звуковые камеры ---
-         // --- ЗВУКОВЫЕ HD (Аналоговые) ---
-        { name: "HD скрытая камера аналоговая. Модель 209 AHD", price: 220000 },
-        { name: "THC-B120-PS; 1080P; 2,8 мм; ИК 20 м; Уличная; Звуковая", price: 300000 },
-        { name: "THC-B129-LPS; 2MP; COLORVU; HYBRIDLIGHT; Звуковая", price: 300000 },
-        { name: "THC-B159M-S mic; 5 MP; 2,8 мм; ИК 20 м; Уличная; Звуковая", price: 400000 },
-        { name: "THC-B229-MS; 2MP; 2,8 мм; ИК 40 м; Уличная; Звуковая", price: 400000 },
-        // --- ЗВУКОВЫЕ IPC (Сетевые) ---
-        { name: "DS-2CD1023G2-LIDUF/4G/SL 2.8 mm 2MP Hikvision Smart HybridLight", price: 600000 },
-        { name: "DS-2CD1043G2-LIDUF/4G/SL 2.8 mm 4MP Hikvision Smart HybridLight", price: 730000 },
-        { name: "DS-2CD1083G2-LIUF/SL 2.8 mm 8MP Hikvision Smart HybridLight", price: 1050000 },
-        { name: "DS-2CD1343G2-LIUF/SL 2.8 mm 4MP Hikvision Smart HybridLight", price: 750000 },
-        { name: "DS-2CD1383G2-LIUF/SL 2.8 mm 8MP Hikvision Smart HybridLight", price: 1050000 },
-        { name: "DS-2CD2443G0E-I; 2.8 mm 4MP Hikvision; (сигарет пачка)", price: 600000 },
-        { name: "IPC-B120HA-LU; 2MP; 2.8mm; ИК 30 м; Уличная; Звуковая;HybridLight", price: 450000 },
-        { name: "IPC-B120HA-LUC mini; 2MP; 2.8mm; Уличная; Звуковая;HybridLight", price: 300000 },
-        { name: "IPC-B121HE-UC; 2 MP; 2,8 мм; ИК 30 м; Уличная Звуковая Киши; Только с POE", price: 400000 },
-        { name: "IPC-B129HA-LU; 2 MP; 2,8 мм; ИК 30 м; Уличная; Colorvu; Звуковая;HYBRIDLIGHT", price: 650000 },
-        { name: "IPC-B140HA-LUC mini; 4MP; 2.8mm; Уличная; Звуковая;HybridLight", price: 600000 },
-        { name: "IPC-B140HAP-LUF/SL pro; HybridLight; 4mp; Уличная; Звуковая", price: 700000 },
-        { name: "IPC-B141H-UC; 4 MP; 2,8 мм; ИК 30 м; Уличная", price: 600000 },
-        { name: "IPC-B149HA-LU Black; 4 MP; 2,8 мм; Ночь 30 м; Уличная; Звуковая;Colorvu", price: 780000 },
-        { name: "IPC-B149HA-LUF; SRB 4 MP; 2,8 мм; Ночь 30 м; Уличная; Звуковая;Colorvu", price: 950000 },
-        { name: "IPC-B160HA-LU; 6MP; 2.8mm; ИК 30 м; Уличная; Звуковая;HybridLight", price: 700000 },
-        { name: "IPC-B160HA-LUF/SL; ColorVu; 6MP; Уличная; Звуковая", price: 750000 },
-        { name: "IPC-B180HA-LU; 8MP; 2.8mm; ИК 30 м; Уличная; Звуковая;HybridLight", price: 850000 },
-        { name: "IPC-B449HA-LU; 4 MP; 2,8 мм; Ночь 30 м; Уличная; Звуковая;Colorvu", price: 950000 },
-        { name: "IPC-B469HAD-LUF/SL; ColorVu; 6MP; Уличная; Звуковая; (180 поворотная)", price: 1400000 },
-        { name: "IPC-C320; 2 MP; 2,8 мм; ИК 10 м; Внутренняя; Звуковая", price: 450000 },
-        { name: "IPC-C340; 4 MP; 2,8 мм; ИК 10 м; Внутренняя; Звуковая", price: 550000 },
-        { name: "IPC-C341; 4 MP; (СИГАРЕТ ПАЧКА)", price: 600000 },
-        { name: "IPC-C361; G2 6 MP; 2,8 мм; ИК 10 м; Внутренняя; Звуковая", price: 750000 },
-        { name: "IPC-D120HA-LU; 2MP; 2.8mm; звуковая; HYBRIDLIGHT; антивандальная", price: 450000 },
-        { name: "IPC-T220H-U built-in microphone; 2 MP; 2,8 мм; ИК 30 м; Потолочная; Звуковая", price: 500000 },
-        { name: "IPC-T220HA-LUC mini; 2MP; 2.8mm; Потолочная; Звуковая;HybritLight", price: 400000 },
-        { name: "IPC-T220HA-LUF/SL; 2MP; 2,8mm; Потолочная; Двусторонняя связь; Детекция людей и транспорта; HybridLight", price: 520000 },
-        { name: "IPC-T221HE-UC; 2 MP; 2,8 mm; ИК 30 М; Потолочная; Звуковая; Только с POE", price: 400000 },
-        { name: "IPC-T240H-U built-in microphone; 4 MP; 2,8 mm; ИК 30 М; Потолочная; Звуковая", price: 550000 },
-        { name: "IPC-T240HA LUC; 4 MP; 2,8 mm; ИК 30 М; Потолочная; Звуковая", price: 550000 },
-        { name: "IPC-T240HA LUF/SL; 4 MP; 2,8 mm; ИК 30 м; Потолочная; Звуковая; Двусторонняя связь; Colorvu; Smart Hybrid Light; Детекция людей и транспорта", price: 650000 },
-        { name: "IPC-T241H-UC; 4 MP; 2,8 мм; ИК 30 м; Потолочная; Звуковая", price: 550000 },
-        { name: "IPC-T260HA LUF/SL; 6 MP; 2,8 мм; ИК 30 м; Потолочная; Звуковая", price: 750000 },
-        { name: "IPC-T269HAD-LUF/SL; COLORVU; 6MP; Потолочная; звуковая; (180 поворотная)", price: 1400000 },
-        // --- PTZ КАМЕРЫ ---
-        { name: "PTZ DS-2DE4425IW-DE; 4MP; Zoom 25x; ИК 100 м; Уличная", price: 4500000 },
-        { name: "PTZ-N2204I-DE3; 2 MP; Zoom 4x4 ИК ; 20 м; Уличная", price: 1250000 },
-        { name: "PTZ-N4225I-DE H; 2MP/25x", price: 4000000 },
-        { name: "IKS-2044BPH-PH/W; 4MP; Wi-Fi Kit", price: 1700000 },
+    const products = {
+        "HDMI и Удлинители": [
+            { name: "(BNC) Video and S-Video to VGA converter", price: 250000 },
+            { name: "HDMI 1,5 m", price: 20000},
+            { name: "HDMI 10 m", price: 110000},
+            { name: "HDMI 15 m", price: 150000},
+            { name: "HDMI 3 m", price: 30000},
+            { name: "HDMI 5 m", price: 45000},
+            { name: "HDMI extender 30 M (пассивный)", price:130000},
+            { name: "HDMI extender 60 M (активный) HDTV-60 M", price:550000},
+            { name: "HDMI splitter 1x2; 1080P 3D HDMI splitter ver 1,4", price:130000},
+            { name: "VGA 1,5 m", price:20000},
+        ]
+        "Аудиоусилители-Микрофоны- Динамики": [
+            { name: "Аудиоколонки 3W-6W настенные", price:120000},
+            { name: "Аудиоколонки 6W потолочный", price:120000},
+            { name: "Аудиоколонки GOLDEN FALCON настенные", price:120000},
+            { name: "Микрофон для усилителя; модель: YS-36", price:250000},
+            { name: "Регулятор громкости 3W; Модель: M-602", price:80000},
+            { name: "Усилители 150W; Модель: MP3-150U", price:2100000},
+        ]
+        "Блоки питания": [
+            { name: "AC/DC adapter 2A/12V; Model: 298-38; Блок питания уличный", price:70000},
+            { name: "Блок питания 10А/12В металл, сеточный", price:110000},
+            { name: "Блок питания 12В/5А пластмассовый. Смарт", price:70000},
+            { name: "Блок питания 15А/12В металл, сеточный", price:150000},
+            { name: "Блок питания 16А/12В металл, сеточный, корпус вытянутый тонкий", price:150000},
+            { name: "Блок питания 2А/12В UPS; Модель: Ups-912", price:70000},
+            { name: "Блок питания 5А/12В металл, сеточный", price:70000},
+            { name: "IKS-2044BTH-PH/W Bullet-Turret; 4Mp; Wi-Fi Kit", price:1500000},
+        ]
+        "EZVIZ КАМЕРЫ": [
+            { name: "EZVIZ C8C 1080; 1080P; Уличная; 360 поворотная; Colorvu", price: 750000 },
+            { name: "EZVIZ CS-H5; 3Mp; 4G, Уличная", price: 670000 },
+            { name: "EZVIZ CS-H6C; 1080P; 2,8 мм; ИК 10 м; Внутренняя; Поворотная", price: 450000 },
+            { name: "EZVIZ H1C; 1080P; Внутренняя", price: 400000 },
+            { name: "EZVIZ H3C 1080 color; 1080P; 2,8 мм; Ночное цветное видение до 20 м; Уличная", price: 600000 },
+            { name: "EZVIZ H3C 1080; 1080P; 2,8 мм; ИК 30 м; Внутренняя", price: 500000 },
+            { name: "EZVIZ H8C 3Mp; 4 мм; Поворотная 360; ИК 30 м; Уличная", price: 850000 },
+            { name: "EZVIZ H8с 3Mp; 4G; Поворотная", price: 1000000 },
+            { name: "EZVIZ; CS-E4p; 6MP; 360 рыбий глаз", price: 1300000 },
+        ]
+        "IPC КАМЕРЫ": [
+            { name: "DS-2CD2463G2-I; 2.8mm; 6mp; Hikvision; (сигарет пачка)", price: 750000 },
+            { name: "DS-KIS612-P", price: 2400000 },
+            { name: "IPC-B120HA; 2 MP; 2,8 мм; ИК 30 м; Уличная", price: 320000 },
+            { name: "IPC-B121H; 2 MP; 2,8 мм; ИК 30 м; Уличная", price: 350000 },
+            { name: "IPC-B129H; 2 MP; ColorVu; 2,8 мм; ИК 30 м; Уличная", price: 550000 },
+            { name: "IPC-B129HA; 2 MP; 2,8 мм; ИК 30 м; Уличная; Colorvu", price: 500000 },
+            { name: "IPC-B140H; 4 MP; 2,8 мм; ИК 30 м; Уличная", price: 550000 },
+            { name: "IPC-B140HА; 4 MP; 2,8 мм; ИК 30 м; Уличная", price: 500000 },
+            { name: "IPC-B149HA; 4 MP; 2,8 мм; Ночь 30 м; Уличная; Colorvu", price: 700000 },
+            { name: "IPC-B150H; 5 MP; 2,8 мм; ИК 30 м; Уличная", price: 500000 },
+            { name: "IPC-B320H-D; 2 MP; 2,8 мм; ИК 20 м; Уличная", price: 180000 },
+            { name: "IPC-B440H; 4 MP; 4 мм; ИК 50 м; Уличная", price: 650000 },
+            { name: "IPC-B660HA-LZU/SL; 6 MP; 2.8-12; двойная подсветка MD 2.0; варифокальная; звуковая; двухсторонняя связь", price: 1730000 },
+            { name: "IPC-D120H; 2 MP; 2,8 мм; ИК 30 м; Антивандальная", price: 350000 },
+            { name: "IPC-D121H; 2 MP; 2,8 мм; ИК 30 м; Антивандальная", price: 350000 },
+            { name: "IPC-T320H-D; 2 MP; 2,8 мм; ИК 20 м; Потолочная", price: 180000 },
+        ]
+        "ЗВУКОВЫЕ HD (Аналоговые)": [
+            { name: "HD скрытая камера аналоговая. Модель 209 AHD", price: 220000 },
+            { name: "THC-B120-PS; 1080P; 2,8 мм; ИК 20 м; Уличная; Звуковая", price: 300000 },
+            { name: "THC-B129-LPS; 2MP; COLORVU; HYBRIDLIGHT; Звуковая", price: 300000 },
+            { name: "THC-B159M-S mic; 5 MP; 2,8 мм; ИК 20 м; Уличная; Звуковая", price: 400000 },
+            { name: "THC-B229-MS; 2MP; 2,8 мм; ИК 40 м; Уличная; Звуковая", price: 400000 },
+        ]
+        "ЗВУКОВЫЕ IPC (Сетевые)": [
+            { name: "DS-2CD1023G2-LIDUF/4G/SL 2.8 mm 2MP Hikvision Smart HybridLight", price: 600000 },
+            { name: "DS-2CD1043G2-LIDUF/4G/SL 2.8 mm 4MP Hikvision Smart HybridLight", price: 730000 },
+            { name: "DS-2CD1083G2-LIUF/SL 2.8 mm 8MP Hikvision Smart HybridLight", price: 1050000 },
+            { name: "DS-2CD1343G2-LIUF/SL 2.8 mm 4MP Hikvision Smart HybridLight", price: 750000 },
+            { name: "DS-2CD1383G2-LIUF/SL 2.8 mm 8MP Hikvision Smart HybridLight", price: 1050000 },
+            { name: "DS-2CD2443G0E-I; 2.8 mm 4MP Hikvision; (сигарет пачка)", price: 600000 },
+            { name: "IPC-B120HA-LU; 2MP; 2.8mm; ИК 30 м; Уличная; Звуковая;HybridLight", price: 450000 },
+            { name: "IPC-B120HA-LUC mini; 2MP; 2.8mm; Уличная; Звуковая;HybridLight", price: 300000 },
+            { name: "IPC-B121HE-UC; 2 MP; 2,8 мм; ИК 30 м; Уличная Звуковая Киши; Только с POE", price: 400000 },
+            { name: "IPC-B129HA-LU; 2 MP; 2,8 мм; ИК 30 м; Уличная; Colorvu; Звуковая;HYBRIDLIGHT", price: 650000 },
+            { name: "IPC-B140HA-LUC mini; 4MP; 2.8mm; Уличная; Звуковая;HybridLight", price: 600000 },
+            { name: "IPC-B140HAP-LUF/SL pro; HybridLight; 4mp; Уличная; Звуковая", price: 700000 },
+            { name: "IPC-B141H-UC; 4 MP; 2,8 мм; ИК 30 м; Уличная", price: 600000 },
+            { name: "IPC-B149HA-LU Black; 4 MP; 2,8 мм; Ночь 30 м; Уличная; Звуковая;Colorvu", price: 780000 },
+            { name: "IPC-B149HA-LUF; SRB 4 MP; 2,8 мм; Ночь 30 м; Уличная; Звуковая;Colorvu", price: 950000 },
+            { name: "IPC-B160HA-LU; 6MP; 2.8mm; ИК 30 м; Уличная; Звуковая;HybridLight", price: 700000 },
+            { name: "IPC-B160HA-LUF/SL; ColorVu; 6MP; Уличная; Звуковая", price: 750000 },
+            { name: "IPC-B180HA-LU; 8MP; 2.8mm; ИК 30 м; Уличная; Звуковая;HybridLight", price: 850000 },
+            { name: "IPC-B449HA-LU; 4 MP; 2,8 мм; Ночь 30 м; Уличная; Звуковая;Colorvu", price: 950000 },
+            { name: "IPC-B469HAD-LUF/SL; ColorVu; 6MP; Уличная; Звуковая; (180 поворотная)", price: 1400000 },
+            { name: "IPC-C320; 2 MP; 2,8 мм; ИК 10 м; Внутренняя; Звуковая", price: 450000 },
+            { name: "IPC-C340; 4 MP; 2,8 мм; ИК 10 м; Внутренняя; Звуковая", price: 550000 },
+            { name: "IPC-C341; 4 MP; (СИГАРЕТ ПАЧКА)", price: 600000 },
+            { name: "IPC-C361; G2 6 MP; 2,8 мм; ИК 10 м; Внутренняя; Звуковая", price: 750000 },
+            { name: "IPC-D120HA-LU; 2MP; 2.8mm; звуковая; HYBRIDLIGHT; антивандальная", price: 450000 },
+            { name: "IPC-T220H-U built-in microphone; 2 MP; 2,8 мм; ИК 30 м; Потолочная; Звуковая", price: 500000 },
+            { name: "IPC-T220HA-LUC mini; 2MP; 2.8mm; Потолочная; Звуковая;HybritLight", price: 400000 },
+            { name: "IPC-T220HA-LUF/SL; 2MP; 2,8mm; Потолочная; Двусторонняя связь; Детекция людей и транспорта; HybridLight", price: 520000 },
+            { name: "IPC-T221HE-UC; 2 MP; 2,8 mm; ИК 30 М; Потолочная; Звуковая; Только с POE", price: 400000 },
+            { name: "IPC-T240H-U built-in microphone; 4 MP; 2,8 mm; ИК 30 М; Потолочная; Звуковая", price: 550000 },
+            { name: "IPC-T240HA LUC; 4 MP; 2,8 mm; ИК 30 М; Потолочная; Звуковая", price: 550000 },
+            { name: "IPC-T240HA LUF/SL; 4 MP; 2,8 mm; ИК 30 м; Потолочная; Звуковая; Двусторонняя связь; Colorvu; Smart Hybrid Light; Детекция людей и транспорта", price: 650000 },
+            { name: "IPC-T241H-UC; 4 MP; 2,8 мм; ИК 30 м; Потолочная; Звуковая", price: 550000 },
+            { name: "IPC-T260HA LUF/SL; 6 MP; 2,8 мм; ИК 30 м; Потолочная; Звуковая", price: 750000 },
+            { name: "IPC-T269HAD-LUF/SL; COLORVU; 6MP; Потолочная; звуковая; (180 поворотная)", price: 1400000 },
+        ]
+        "PTZ КАМЕРЫ": [
+            { name: "PTZ DS-2DE4425IW-DE; 4MP; Zoom 25x; ИК 100 м; Уличная", price: 4500000 },
+            { name: "PTZ-N2204I-DE3; 2 MP; Zoom 4x4 ИК ; 20 м; Уличная", price: 1250000 },
+            { name: "PTZ-N4225I-DE H; 2MP/25x", price: 4000000 },
+            { name: "IKS-2044BPH-PH/W; 4MP; Wi-Fi Kit", price: 1700000 },
+        ]
         // --- THD КАМЕРЫ ---
         { name: "DS-2CE56D0T-IPF; 1080 P; 2,8 мм; ИК 20 м; Потолочная; Hikvision; THC-T120-P", price: 260000 },
         { name: "THC-B110-P; 720P; 2,8 мм; ИК 20 м Уличная", price: 120000 },
@@ -417,6 +443,44 @@
     }
 
     init();
+    function renderSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    sidebar.innerHTML = '<h3>Разделы</h3>'; // Заголовок меню
+
+    Object.keys(catalog).forEach((categoryName) => {
+        const btn = document.createElement('div');
+        btn.className = 'cat-item';
+        btn.innerText = categoryName;
+        
+        // При клике - обновляем товары
+        btn.onclick = () => {
+            updateProductList(categoryName);
+            // Подсветка активной кнопки
+            document.querySelectorAll('.cat-item').forEach(el => el.classList.remove('active'));
+            btn.classList.add('active');
+        };
+        sidebar.appendChild(btn);
+    });
+}
+
+// Эта функция меняет товары в твоем выпадающем списке pSelect
+function updateProductList(cat) {
+    const pSelect = document.getElementById('pSelect');
+    pSelect.innerHTML = ''; // Очищаем старые товары
+    
+    catalog[cat].forEach(item => {
+        const option = document.createElement('option');
+        option.value = item.price;
+        option.text = `${item.name} (${item.price.toLocaleString()} сум);
+        pSelect.add(option)`;
+    });
+}
+
+// Запускаем всё при загрузке страницы
+renderSidebar();
+if (Object.keys(catalog).length > 0) {
+    updateProductList(Object.keys(catalog)[0]);
+}
 </script>
 
 </body>
