@@ -482,11 +482,32 @@
 
     // Фильтр поиска
     function filterProducts() {
-        const term = document.getElementById('searchInput').value.toLowerCase();
-        const filtered = catalog[currentCategory].filter(p => 
-            p.name.toLowerCase().includes(term)
-        );
-        updateProductList(filtered);
+    const term = document.getElementById('searchInput').value.toLowerCase();
+    
+    // Если поиск пустой, возвращаем товары текущей категории
+    if (term === "") {
+        updateProductList(); 
+        return;
+    }
+
+    let globalFiltered = [];
+
+    // Проходим циклом по всем категориям в объекте catalog
+    Object.keys(catalog).forEach(category => {
+        catalog[category].forEach(product => {
+            // Если имя товара содержит поисковый запрос
+            if (product.name.toLowerCase().includes(term)) {
+                // Добавляем пометку категории к названию, чтобы не запутаться
+                globalFiltered.push({
+                    name: `[${category}] ${product.name}`, 
+                    price: product.price
+                });
+            }
+        });
+    });
+
+    // Выводим все найденные товары во всех категориях
+    updateProductList(globalFiltered);
     }
 
     // Добавление в корзину
