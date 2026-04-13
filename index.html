@@ -3,74 +3,101 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ELVID Смета 2026</title>
+    <title>ELVID Смета</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; display: flex; justify-content: center; }
-        .calc-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        h2 { text-align: center; color: #1a73e8; border-bottom: 2px solid #28a745; padding-bottom: 10px; margin-top: 0; }
-        .row { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
-        select, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
-        .btn-add { background: #28a745; color: white; border: none; width: 100%; padding: 15px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-add:active { background: #1e7e34; transform: scale(0.98); }
-        .res-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .res-table th, .res-table td { text-align: left; padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
-        .total-box { margin-top: 20px; padding: 15px; background: #e8f0fe; border-radius: 8px; text-align: right; }
-        .total-val { font-size: 24px; font-weight: bold; color: #d93025; }
-        .btn-reset { background: none; border: 1px solid #ccc; color: #999; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-top: 15px; font-size: 12px; }
-        body { display: flex; } /* Это заставит сайдбар и карту встать в ряд */
+        body { font-family: sans-serif; background: #f0f2f5; margin: 0; display: flex; }
+        
+        /* Сайдбар */
         .sidebar { 
-            width: 250px; 
-            background: #fff; 
-            padding: 15px; 
+            width: 280px; 
+            background: white; 
             border-right: 1px solid #ddd;
             height: 100vh;
+            overflow-y: auto;
+            position: sticky;
+            top: 0;
         }
+        .sidebar h3 { padding: 20px; margin: 0; background: #1a73e8; color: white; font-size: 18px; }
         .cat-item { 
-            padding: 10px; 
+            padding: 12px 20px; 
             cursor: pointer; 
             border-bottom: 1px solid #eee; 
+            transition: 0.3s;
+            font-size: 14px;
         }
-        .cat-item:hover { background: #f0f2f5; }
-        .active { color: #1a73e8; font-weight: bold; border-left: 4px solid #1a73e8; }
+        .cat-item:hover { background: #e8f0fe; }
+        .active { color: #1a73e8; font-weight: bold; border-left: 5px solid #1a73e8; background: #e8f0fe; }
+
+        /* Основной контент */
+        .main-content { flex-grow: 1; padding: 20px; display: flex; justify-content: center; }
+        .calc-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; height: fit-content; }
+        
+        h2 { text-align: center; color: #1a73e8; margin-top: 0; }
+        .row { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        
+        select, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        
+        /* Поиск */
+        .search-box { margin-bottom: 10px; background: #fffbe6; border: 1px solid #ffe58f; }
+
+        .btn-add { background: #28a745; color: white; border: none; width: 100%; padding: 15px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .btn-add:hover { background: #218838; }
+
+        .res-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .res-table th, .res-table td { text-align: left; padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+        
+        .total-box { margin-top: 20px; padding: 15px; background: #e8f0fe; border-radius: 8px; text-align: right; }
+        .total-val { font-size: 24px; font-weight: bold; color: #d93025; }
+        
+        .btn-reset { background: none; border: 1px solid #ccc; color: #999; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-top: 15px; display: block; margin-left: auto; }
     </style>
 </head>
 <body>
-<div class= "sidebar" id="sidebar">
-    </div>
-<div class="calc-card">
-    <h2>Смета ELVID</h2>
-    
-    <div class="row">
-        <label>Выберите оборудование:</label>
-        <select id="pSelect"></select>
+
+<div class="sidebar" id="sidebar">
+    <h3>Разделы</h3>
     </div>
 
-    <div class="row">
-        <label>Количество (шт):</label>
-        <input type="number" id="qInput" value="1" min="1">
+<div class="main-content">
+    <div class="calc-card">
+        <h2>Смета ELVID</h2>
+        
+        <div class="row">
+            <label>🔍 Поиск товара:</label>
+            <input type="text" id="searchInput" placeholder="Введите название..." oninput="filterProducts()">
+        </div>
+
+        <div class="row">
+            <label>Выберите оборудование:</label>
+            <select id="pSelect"></select>
+        </div>
+
+        <div class="row">
+            <label>Количество (шт):</label>
+            <input type="number" id="qInput" value="1" min="1">
+        </div>
+
+        <button class="btn-add" onclick="addItem()">➕ Добавить в смету</button>
+
+        <table class="res-table">
+            <thead>
+                <tr><th>Товар</th><th>Кол-во</th><th>Сумма</th></tr>
+            </thead>
+            <tbody id="resBody"></tbody>
+        </table>
+
+        <div class="total-box">
+            <div style="color: #1a73e8; font-size: 14px; font-weight: bold;">ИТОГО К ОПЛАТЕ:</div>
+            <div class="total-val" id="finalSum">0 сум</div>
+        </div>
+
+        <button class="btn-reset" onclick="clearAll()">Очистить список</button>
     </div>
-
-    <button class="btn-add" onclick="addItem()">➕ Добавить в смету</button>
-
-    <table class="res-table">
-        <thead>
-            <tr><th>Товар</th><th>Кол-во</th><th>Сумма</th></tr>
-        </thead>
-        <tbody id="resBody"></tbody>
-    </table>
-
-    <div class="total-box">
-        <div style="color: #1a73e8; font-size: 14px; font-weight: bold;">ИТОГО К ОПЛАТЕ:</div>
-        <div class="total-val" id="finalSum">0 сум</div>
-    </div>
-
-    <button class="btn-reset" onclick="clearAll()">Очистить список</button>
 </div>
 
 <script>
-    // ТЕСТОВЫЙ СПИСОК (сначала проверим работу кнопок)
-    const products = {
+    const catalog = {
         "HDMI и Удлинители": [
             { name: "(BNC) Video and S-Video to VGA converter", price: 250000 },
             { name: "HDMI 1,5 m", price: 20000},
@@ -81,424 +108,135 @@
             { name: "HDMI extender 30 M (пассивный)", price:130000},
             { name: "HDMI extender 60 M (активный) HDTV-60 M", price:550000},
             { name: "HDMI splitter 1x2; 1080P 3D HDMI splitter ver 1,4", price:130000},
-            { name: "VGA 1,5 m", price:20000},
-        ]
-        "Аудиоусилители-Микрофоны- Динамики": [
+            { name: "VGA 1,5 m", price:20000}
+        ],
+        "Аудио-Микрофоны": [
             { name: "Аудиоколонки 3W-6W настенные", price:120000},
             { name: "Аудиоколонки 6W потолочный", price:120000},
             { name: "Аудиоколонки GOLDEN FALCON настенные", price:120000},
-            { name: "Микрофон для усилителя; модель: YS-36", price:250000},
-            { name: "Регулятор громкости 3W; Модель: M-602", price:80000},
-            { name: "Усилители 150W; Модель: MP3-150U", price:2100000},
-        ]
+            { name: "Микрофон для усилителя; YS-36", price:250000},
+            { name: "Усилители 150W; MP3-150U", price:2100000}
+        ],
         "Блоки питания": [
-            { name: "AC/DC adapter 2A/12V; Model: 298-38; Блок питания уличный", price:70000},
-            { name: "Блок питания 10А/12В металл, сеточный", price:110000},
-            { name: "Блок питания 12В/5А пластмассовый. Смарт", price:70000},
-            { name: "Блок питания 15А/12В металл, сеточный", price:150000},
-            { name: "Блок питания 16А/12В металл, сеточный, корпус вытянутый тонкий", price:150000},
-            { name: "Блок питания 2А/12В UPS; Модель: Ups-912", price:70000},
-            { name: "Блок питания 5А/12В металл, сеточный", price:70000},
-            { name: "IKS-2044BTH-PH/W Bullet-Turret; 4Mp; Wi-Fi Kit", price:1500000},
-        ]
+            { name: "AC/DC adapter 2A/12V; Блок питания уличный", price:70000},
+            { name: "Блок питания 10А/12В металл", price:110000},
+            { name: "Блок питания 12В/5А пластмассовый", price:70000},
+            { name: "Блок питания 15А/12В металл", price:150000},
+            { name: "Блок питания 2А/12В UPS", price:70000}
+        ],
         "EZVIZ КАМЕРЫ": [
-            { name: "EZVIZ C8C 1080; 1080P; Уличная; 360 поворотная; Colorvu", price: 750000 },
-            { name: "EZVIZ CS-H5; 3Mp; 4G, Уличная", price: 670000 },
-            { name: "EZVIZ CS-H6C; 1080P; 2,8 мм; ИК 10 м; Внутренняя; Поворотная", price: 450000 },
-            { name: "EZVIZ H1C; 1080P; Внутренняя", price: 400000 },
-            { name: "EZVIZ H3C 1080 color; 1080P; 2,8 мм; Ночное цветное видение до 20 м; Уличная", price: 600000 },
-            { name: "EZVIZ H3C 1080; 1080P; 2,8 мм; ИК 30 м; Внутренняя", price: 500000 },
-            { name: "EZVIZ H8C 3Mp; 4 мм; Поворотная 360; ИК 30 м; Уличная", price: 850000 },
-            { name: "EZVIZ H8с 3Mp; 4G; Поворотная", price: 1000000 },
-            { name: "EZVIZ; CS-E4p; 6MP; 360 рыбий глаз", price: 1300000 },
-        ]
+            { name: "EZVIZ C8C 1080; Colorvu", price: 750000 },
+            { name: "EZVIZ CS-H5; 3Mp; 4G", price: 670000 },
+            { name: "EZVIZ CS-H6C; Внутренняя", price: 450000 },
+            { name: "EZVIZ H3C 1080 color", price: 600000 }
+        ],
         "IPC КАМЕРЫ": [
-            { name: "DS-2CD2463G2-I; 2.8mm; 6mp; Hikvision; (сигарет пачка)", price: 750000 },
-            { name: "DS-KIS612-P", price: 2400000 },
-            { name: "IPC-B120HA; 2 MP; 2,8 мм; ИК 30 м; Уличная", price: 320000 },
-            { name: "IPC-B121H; 2 MP; 2,8 мм; ИК 30 м; Уличная", price: 350000 },
-            { name: "IPC-B129H; 2 MP; ColorVu; 2,8 мм; ИК 30 м; Уличная", price: 550000 },
-            { name: "IPC-B129HA; 2 MP; 2,8 мм; ИК 30 м; Уличная; Colorvu", price: 500000 },
-            { name: "IPC-B140H; 4 MP; 2,8 мм; ИК 30 м; Уличная", price: 550000 },
-            { name: "IPC-B140HА; 4 MP; 2,8 мм; ИК 30 м; Уличная", price: 500000 },
-            { name: "IPC-B149HA; 4 MP; 2,8 мм; Ночь 30 м; Уличная; Colorvu", price: 700000 },
-            { name: "IPC-B150H; 5 MP; 2,8 мм; ИК 30 м; Уличная", price: 500000 },
-            { name: "IPC-B320H-D; 2 MP; 2,8 мм; ИК 20 м; Уличная", price: 180000 },
-            { name: "IPC-B440H; 4 MP; 4 мм; ИК 50 м; Уличная", price: 650000 },
-            { name: "IPC-B660HA-LZU/SL; 6 MP; 2.8-12; двойная подсветка MD 2.0; варифокальная; звуковая; двухсторонняя связь", price: 1730000 },
-            { name: "IPC-D120H; 2 MP; 2,8 мм; ИК 30 м; Антивандальная", price: 350000 },
-            { name: "IPC-D121H; 2 MP; 2,8 мм; ИК 30 м; Антивандальная", price: 350000 },
-            { name: "IPC-T320H-D; 2 MP; 2,8 мм; ИК 20 м; Потолочная", price: 180000 },
-        ]
-        "ЗВУКОВЫЕ HD (Аналоговые)": [
-            { name: "HD скрытая камера аналоговая. Модель 209 AHD", price: 220000 },
-            { name: "THC-B120-PS; 1080P; 2,8 мм; ИК 20 м; Уличная; Звуковая", price: 300000 },
-            { name: "THC-B129-LPS; 2MP; COLORVU; HYBRIDLIGHT; Звуковая", price: 300000 },
-            { name: "THC-B159M-S mic; 5 MP; 2,8 мм; ИК 20 м; Уличная; Звуковая", price: 400000 },
-            { name: "THC-B229-MS; 2MP; 2,8 мм; ИК 40 м; Уличная; Звуковая", price: 400000 },
-        ]
-        "ЗВУКОВЫЕ IPC (Сетевые)": [
-            { name: "DS-2CD1023G2-LIDUF/4G/SL 2.8 mm 2MP Hikvision Smart HybridLight", price: 600000 },
-            { name: "DS-2CD1043G2-LIDUF/4G/SL 2.8 mm 4MP Hikvision Smart HybridLight", price: 730000 },
-            { name: "DS-2CD1083G2-LIUF/SL 2.8 mm 8MP Hikvision Smart HybridLight", price: 1050000 },
-            { name: "DS-2CD1343G2-LIUF/SL 2.8 mm 4MP Hikvision Smart HybridLight", price: 750000 },
-            { name: "DS-2CD1383G2-LIUF/SL 2.8 mm 8MP Hikvision Smart HybridLight", price: 1050000 },
-            { name: "DS-2CD2443G0E-I; 2.8 mm 4MP Hikvision; (сигарет пачка)", price: 600000 },
-            { name: "IPC-B120HA-LU; 2MP; 2.8mm; ИК 30 м; Уличная; Звуковая;HybridLight", price: 450000 },
-            { name: "IPC-B120HA-LUC mini; 2MP; 2.8mm; Уличная; Звуковая;HybridLight", price: 300000 },
-            { name: "IPC-B121HE-UC; 2 MP; 2,8 мм; ИК 30 м; Уличная Звуковая Киши; Только с POE", price: 400000 },
-            { name: "IPC-B129HA-LU; 2 MP; 2,8 мм; ИК 30 м; Уличная; Colorvu; Звуковая;HYBRIDLIGHT", price: 650000 },
-            { name: "IPC-B140HA-LUC mini; 4MP; 2.8mm; Уличная; Звуковая;HybridLight", price: 600000 },
-            { name: "IPC-B140HAP-LUF/SL pro; HybridLight; 4mp; Уличная; Звуковая", price: 700000 },
-            { name: "IPC-B141H-UC; 4 MP; 2,8 мм; ИК 30 м; Уличная", price: 600000 },
-            { name: "IPC-B149HA-LU Black; 4 MP; 2,8 мм; Ночь 30 м; Уличная; Звуковая;Colorvu", price: 780000 },
-            { name: "IPC-B149HA-LUF; SRB 4 MP; 2,8 мм; Ночь 30 м; Уличная; Звуковая;Colorvu", price: 950000 },
-            { name: "IPC-B160HA-LU; 6MP; 2.8mm; ИК 30 м; Уличная; Звуковая;HybridLight", price: 700000 },
-            { name: "IPC-B160HA-LUF/SL; ColorVu; 6MP; Уличная; Звуковая", price: 750000 },
-            { name: "IPC-B180HA-LU; 8MP; 2.8mm; ИК 30 м; Уличная; Звуковая;HybridLight", price: 850000 },
-            { name: "IPC-B449HA-LU; 4 MP; 2,8 мм; Ночь 30 м; Уличная; Звуковая;Colorvu", price: 950000 },
-            { name: "IPC-B469HAD-LUF/SL; ColorVu; 6MP; Уличная; Звуковая; (180 поворотная)", price: 1400000 },
-            { name: "IPC-C320; 2 MP; 2,8 мм; ИК 10 м; Внутренняя; Звуковая", price: 450000 },
-            { name: "IPC-C340; 4 MP; 2,8 мм; ИК 10 м; Внутренняя; Звуковая", price: 550000 },
-            { name: "IPC-C341; 4 MP; (СИГАРЕТ ПАЧКА)", price: 600000 },
-            { name: "IPC-C361; G2 6 MP; 2,8 мм; ИК 10 м; Внутренняя; Звуковая", price: 750000 },
-            { name: "IPC-D120HA-LU; 2MP; 2.8mm; звуковая; HYBRIDLIGHT; антивандальная", price: 450000 },
-            { name: "IPC-T220H-U built-in microphone; 2 MP; 2,8 мм; ИК 30 м; Потолочная; Звуковая", price: 500000 },
-            { name: "IPC-T220HA-LUC mini; 2MP; 2.8mm; Потолочная; Звуковая;HybritLight", price: 400000 },
-            { name: "IPC-T220HA-LUF/SL; 2MP; 2,8mm; Потолочная; Двусторонняя связь; Детекция людей и транспорта; HybridLight", price: 520000 },
-            { name: "IPC-T221HE-UC; 2 MP; 2,8 mm; ИК 30 М; Потолочная; Звуковая; Только с POE", price: 400000 },
-            { name: "IPC-T240H-U built-in microphone; 4 MP; 2,8 mm; ИК 30 М; Потолочная; Звуковая", price: 550000 },
-            { name: "IPC-T240HA LUC; 4 MP; 2,8 mm; ИК 30 М; Потолочная; Звуковая", price: 550000 },
-            { name: "IPC-T240HA LUF/SL; 4 MP; 2,8 mm; ИК 30 м; Потолочная; Звуковая; Двусторонняя связь; Colorvu; Smart Hybrid Light; Детекция людей и транспорта", price: 650000 },
-            { name: "IPC-T241H-UC; 4 MP; 2,8 мм; ИК 30 м; Потолочная; Звуковая", price: 550000 },
-            { name: "IPC-T260HA LUF/SL; 6 MP; 2,8 мм; ИК 30 м; Потолочная; Звуковая", price: 750000 },
-            { name: "IPC-T269HAD-LUF/SL; COLORVU; 6MP; Потолочная; звуковая; (180 поворотная)", price: 1400000 },
-        ]
-        "PTZ КАМЕРЫ": [
-            { name: "PTZ DS-2DE4425IW-DE; 4MP; Zoom 25x; ИК 100 м; Уличная", price: 4500000 },
-            { name: "PTZ-N2204I-DE3; 2 MP; Zoom 4x4 ИК ; 20 м; Уличная", price: 1250000 },
-            { name: "PTZ-N4225I-DE H; 2MP/25x", price: 4000000 },
-            { name: "IKS-2044BPH-PH/W; 4MP; Wi-Fi Kit", price: 1700000 },
-        ]
-        "THD КАМЕРЫ": [
-            { name: "DS-2CE56D0T-IPF; 1080 P; 2,8 мм; ИК 20 м; Потолочная; Hikvision; THC-T120-P", price: 260000 },
-            { name: "THC-B110-P; 720P; 2,8 мм; ИК 20 м Уличная", price: 120000 },
-            { name: "THC-B120-P; 1080P; 2,8 мм; ИК 20 м Уличная", price: 200000 },
-            { name: "THC-B127-LPC; 2 MP; 2,8 мм; ИК-20 м; Led-подсветка; Уличная", price: 230000 },
-            { name: "THC-B129-P; 1080P; ColorVu; 2,8 мм; ИК 20 м; Уличная", price: 300000 },
-            { name: "THC-B220; 1080P; 2,8 мм; ИК 40 м; Уличная", price: 300000 },
-            { name: "THC-T120-P; 1080P; 2,8 мм; Потолочная", price: 180000 },
-            { name: "THC-T120-PC; 1080P; 2,8 мм; ИК 20 м; Потолочная", price: 200000 },
-        ]
-        "Звуковые HD": [ 
-            { name: "HD скрытая камера аналоговая. Модель 209 AHD", price: 220000 },
-            { name: "THC-B120-PS; 1080P; 2,8 мм; ИК 20 м; Уличная; Звуковая", price: 300000 },
-            { name: "THC-B129-LPS; 2MP; COLORVU; HYBRIDLIGHT; Звуковая", price: 300000 },
-            { name: "THC-B159M-S mic; 5 MP; 2,8 мм; ИК 20 м; Уличная", price: 400000 },
-            { name: "THC-B229-MS; 2MP; 2,8 мм; ИК 40 м; Уличная", price: 400000 },
-            { name: "THC-B229-MS; 2MP; 2,8 мм; ИК 40 м; Уличная", price: 400000 },
-            { name: "TD35 4G; Уличная; Солнечная 4G; Двойные объективы 2К и 2К; микрофлешка до 128 ГБ; приложение V380-PRO", price: 950000 },
-            { name: "TP15 4G; Уличная; Солнечная; Двойные объективы 2К и 2К; микрофлешка до 128 ГБ; приложение V380-PRO", price: 950000 },
-            { name: "TP20 Solar 4G; Уличная; Солнечная 4G; Тройные объективы 2К и 2К и 2К; микрофлешка до 128 ГБ; приложение V380-PRO", price: 900000 },
-        ]
+            { name: "IPC-B120HA; 2 MP; ИК 30 м", price: 320000 },
+            { name: "IPC-B129H; ColorVu; 2 MP", price: 550000 },
+            { name: "IPC-B140H; 4 MP; Уличная", price: 550000 },
+            { name: "IPC-D120H; Антивандальная", price: 350000 }
+        ],
         "Домофоны": [
-            { name: "DS-KH2220, HD аналоговый видеодомофон (без коробки)", price: 400000 },
-            { name: "DS-KIS-203T; HD аналоговый видеодомофон", price: 1000000 },
-            { name: "DS-KIS-205 T; HD аналоговый видеодомофон", price: 1300000 },
-            { name: "DS-KIS602; IP видеодомофон", price: 2000000 },
+            { name: "DS-KH2220; Видеодомофон", price: 400000 },
             { name: "DS-KIS603-P; IP видеодомофон", price: 1800000 },
-            { name: "EZVIZ CS-HP 5 (2 MP); домофон", price: 2200000 },
-            { name: "БУЗ (Блок Управления Замком), накопитель", price: 50000 },
-            { name: "Брелок Mifare для домофона и считывателя Hikvision", price: 10000 },
-            { name: "Брелок для домофона и считывателя Mifare", price: 10000 },
-            { name: "Гибкий переход", price: 50000 },
-            { name: "Карта MIFARE для домофона и шлагбаума", price: 10000 },
-        ]
+            { name: "БУЗ (Блок Управления Замком)", price: 50000 },
+            { name: "Брелок Mifare", price: 10000 }
+        ],
         "ЖЕСТКИЕ ДИСКИ HDD": [
             { name: "1 TB HDD", price: 750000 },
-            { name: "1 TB HDD Оригинал", price: 880000 },
             { name: "2 TB HDD", price: 980000 },
-            { name: "2 TB HDD Оригинал", price: 980000 },
-            { name: "3 TB HDD", price: 1350000 },
-            { name: "4 TB HDD", price: 1700000 },
-            { name: "6 TB HDD", price: 2200000 },
-        ]
-        "КАБЕЛЬНАЯ ПРОДУКЦИЯ": [
-            { name: "FTP кабель 5E кат., Astel; коробка; чёрный; уличный", price: 35000 },
-            { name: "FTP кабель Highway; чёрный; 6E кат.; уличный", price: 35000 },
-            { name: "FTP кабель; Hightcable; чёрный; 5E кат.; уличный", price: 35000 },
-            { name: "FTP кабель; чёрный; 6E кат.; с тросом; уличный", price: 35000 },
-            { name: "LAN TESTER 368A", price: 50000 },
-            { name: "Кабель UTP 5E openbox gold", price: 3500000 },
-            { name: "UTP 5E CCA+ кабель; серый; внутренний", price: 35000 },
-            { name: "Кабель KKB (CCTV) Astel Digitals camera cable", price: 35000 },
-            { name: "Кабель KKB openbox gold (CCTV)", price: 35000 },
-            { name: "Кабель питания 220В для блоков питания и других устройств", price: 10000 },
-            { name: "Кабель питания 220В компьютерный", price: 15000 },
-            { name: "Оптика кабель FTTH DROP Starlink", price: 1500 },
-            { name: "ПВС кабель 2х1,5 L&C; белый", price: 35000 },
-            { name: "ПУГНП кабель 2х0,5; белый", price: 35000 },
-            { name: "ТРП кабель (ТРбН) телефонный", price: 16000 },
-        ]
+            { name: "4 TB HDD", price: 1700000 }
+        ],
         "МАТЕРИАЛЫ": [
             { name: "Pilot 1,8 м (Пилот)", price: 50000 },
-            { name: "Pilot 3 м (Пилот)", price: 65000 },
-            { name: "Pilot 4,5 м (Пилот)", price: 70000 },
-            { name: "Аккумуляторная батарея 2,3А/12В", price: 160000 },
-            { name: "Аккумуляторная батарея 7А/12В", price: 180000 },
             { name: "Герметичная коробка 15х15 см", price: 15000 },
-            { name: "Герметичная коробка 8,5х8,5 см", price: 10000 },
-            { name: "Герметичная коробка круглая 11 см", price: 15000 },
-            { name: "Герметичный ящик 25х37", price: 100000 },
-            { name: "Герметичный ящик 30х40", price: 180000 },
-            { name: "Герметичный ящик 40х60", price: 290000 },
-            { name: "Гофра 20", price: 2000 },
-            { name: "Гофра 25", price: 2500 },
             { name: "Изолента", price: 5000 },
-            { name: "Короб пластмассовый 16х16", price: 6000 },
-            { name: "Короб пластмассовый 25х16", price: 8000 },
-            { name: "Короб пластмассовый 25х25", price: 12000 },
-            { name: "Короб пластмассовый 25х40", price: 15000 },
-            { name: "Кронштейн BR-5505 17-55 большой", price: 100000 },
-            { name: "Кронштейн LS-1743 17-43 маленький", price: 55000 },
+            { name: "Гофра 20", price: 2000 }
         ]
-        "ПРОЧИЕ АКСЕССУАРЫ": [
-            { name: "Компьютерные наушники AZ-12 BLUETOOTH AUX MICRO FLESHKA ZARYADKALI", price: 140000 },
-            { name: "Компьютерные наушники Lelisu LS 213 BLUETOOTH AUX MICRO FLESHKA ZARYADKALI", price: 115000 },
-            { name: "Card Reader (SD флешка переходник)", price: 5000 },
-            { name: "EAR pods PRO 3", price: 15000 },
-            { name: "LAN splitter (LAN разветвитель)", price: 20000 },
-            { name: "Батарейка CR1220 (круглая как таблетка)", price: 15000 },
-            { name: "Блютуз мышка", price: 55000 },
-            { name: "Блютуз мышка. JR 2", price: 60000 },
-            { name: "Видеобалун (Videobalun)", price: 25000 },
-            { name: "Датчики лучевые - пара; Модель: АВО-20", price: 150000 },
-            { name: "Диктофон Digital Voice Recorder", price: 380000 },
-            { name: "Зарядник прикуриватель для автомобиля (car charger 2 A) АВТОБОШ КОРА", price: 22000 },
-            { name: "Колонки компьютерные Т001", price: 55000 },
-            { name: "Компьютерная флешка 32GB USB 2.0 TransMemory U202", price: 65000 },
-            { name: "Микрофлешка Lexar Micro 256GB", price: 360000 },
-            { name: "Микрофлешка San disk Micro 128 GB", price: 260000 },
-            { name: "Микрофон для HD камеры", price: 70000 },
-            { name: "Наушники в пакете", price: 13000 },
-            { name: "Наушники кабельные в коробке D3", price: 25000 },
-            { name: "Переходник Терминатор", price: 15000 },
-            { name: "Переходник евровилка", price: 10000 },
-            { name: "Пульт универсальный (для шлагбаумов и автоматических ворот); Модель: R406", price: 100000 },
-            { name: "Радиоконтроллер на 4 канала . Память на 100 пультов 315 Мгц . Питание 12В Реле до 10А.", price: 220000 },
-            { name: "Радиоконтроллер на 4 канала . Память на 100 пультов 433 Мгц . Питание 12В Реле до 10А.", price: 250000 },
-        ]
-        "ОХРАННАЯ СИГНАЛИЗАЦИЯ": [
-            { name: "AD22-22SM/R AC/DC 220 - Светозвуковая сирена, красная", price: 50000 },
-            { name: "Glasstrek (датчик разбития)", price: 80000 },
-            { name: "Security Alarm System", price: 850000 },
-            { name: "ББП-30 'Элис' Блок резервного питания", price: 250000 },
-            { name: "ББП-50 'Электронные технологии' Блок резервного питания", price: 320000 },
-            { name: "Рапид (Вариант 2) Детектор охранной сигнализации", price: 85000 },
-            { name: "Рапид Эк Детектор охранной сигнализации", price: 85000 },
-            { name: "СМК датчик", price: 17000 },
-        ]
-        "ПОЖАРНАЯ СИГНАЛИЗАЦИЯ": [
-            { name: "Altay-12 (Алтай-12) Приемно-контрольный прибор Пожарной и Охранной сигнализации", price: 580000 },
-            { name: "Altay-8 (Алтай-8) Приемно-контрольный прибор Пожарной и Охранной сигнализации", price: 500000 },
-            { name: "Gamma-2 (Гамма-2) Приемно-контрольный прибор Пожарной и Охранной сигнализации", price: 320000 },
-            { name: "Гамма-4 (Гамма-4) Приемно-контрольный прибор Пожарной и Охранной сигнализации", price: 400000 },
-            { name: "Дымовой пожарный датчик ИП 212-01 (АРТОН-ИПД-3.1М)", price: 65000 },
-            { name: "Дымовой пожарный датчик ИП 212-141 (Рубеж)", price: 65000 },
-            { name: "Дымовой пожарный датчик Элекор ПДИ", price: 65000 },
-            { name: "ИП 212-99 дымовой датчик", price: 65000 },
-            { name: "ИПР 513-10 (Рубеж) (ИЗВЕЩАТЕЛЬ ПОЖАРНЫЙ РУЧНОЙ)", price: 75000 },
-            { name: "ИПР 535 (ИЗВЕЩАТЕЛЬ ПОЖАРНЫЙ РУЧНОЙ)", price: 75000 },
-            { name: "Коробки КС-4", price: 7000 },
-            { name: "СУЗ МАРС 12-КП (Охранно-пожарный оповещатель)", price: 75000 },
-            { name: "СУЗ Министроб (Охранно-пожарный оповещатель)", price: 75000 },
-            { name: "Табло 'Exit-Выход'", price: 110000 },
-            { name: "Тепловой пожарный датчик ИП-103", price: 25000 },
-        ]
-        "ТЕРМИНАЛЫ ДОСТУПА": [
-            { name: "DS-K1T343MFWX; Терминал распознавания лиц; Hikvision", price: 1200000 },
-            { name: "DS-K1T804BEF; Терминал распознавания отпечатков пальцев; Hikvision", price: 1200000 },
-            { name: "Кодовая панель", price: 250000 },
-        ]
-        "Сетевое оборудование": [
-            { name: "3G/4G USB модем", price: 180000 },
-            { name: "4G CPE 903 WI-FI router", price: 400000 },
-            { name: "PoE Repeater. PoE повторитель", price: 90000 },
-            { name: "TP-Link TL-WA901ND(EU)", price: 100000 },
-            { name: "WI-FI мост Hikvision DS-3WF1000-EI-2N; 2,4 GHz 300 Mbps; дальность 1 KM; WI-FI Антенна", price: 850000 },
-            { name: "WI-FI мост WIRELESS BRIDGE 5 KM; WI-FI Антенна", price: 2800000 },
-            { name: "WI-FI 4G-CPF912", price: 400000 },
-            { name: "WI-FI 4G; R611C", price: 400000 },
-            { name: "WI-FI Mobil 4G Lte Карманный", price: 350000 },
-            { name: "Wi-Fi роутер TENDA F3; 3 шахты; Кара", price: 270000 },
-            { name: "Репитер Tenda A9 / Повторитель / Универсальный повторитель беспроводного сигнала стандарта N300", price: 250000 },
-        ]
-        "PoE СВИТЧИ": [
-            { name: "NADO-04-POE; POE switch", price: 250000 },
-            { name: "NADO-08-POE; POE switch", price: 350000 },
-            { name: "NS-0106P-35; 4 POE-портов; POE switch", price: 390000 },
-            { name: "NS-0110MP-60 Hilook; 8 POE портов + 2 Ethernet порта; POE свитч", price: 500000 },
-            { name: "NS-0326P-225; POE switch", price: 2320000 },
-            { name: "POE switch Hikvision DS-3E0106MP-E/M; 6 портов; 4 порта PoE 10/100 Мбит/с и 2 порта RJ45 10/100 Мбит/с", price: 300000 },
-            { name: "SMART POE SWITCH; 16 канальный POE switch", price: 1325000 },
-        ]
-        "СВИТЧИ": [
-            { name: "Mercury S108M; 8 портов; Мегабитный свитч", price: 175000 },
-            { name: "NS-0105D Hilook; 5 портов; Мегабитный свитч", price: 130000 },
-            { name: "Tenda S105; 5 портов; Мегабитный свитч", price: 105000 },
-            { name: "Tenda S108; 8 портов; Мегабитный свитч", price: 175000 },
-            { name: "Tenda SG 105; 5 портов; Гигабитный свитч", price: 250000 },
-        ]
-        "Штеккеры и соединители": [
-            { name: "BNC simli", price: 5000 },
-            { name: "BNC соединитель", price: 5000 },
-            { name: "BNC штеккер", price: 5000 },
-            { name: "POE SPLITTER OUTDOOR черный цвет", price: 25000 },
-            { name: "POE SPLITTER OUTDOOR Белый цвет", price: 25000 },
-            { name: "RCA разъём (тюльпаны)", price: 8000 },
-            { name: "RJ 45 SAYDENITEL круглый; NEG207", price: 15000 },
-            { name: "RJ-45 коннектор (5E категория)", price: 500 },
-            { name: "RJ-45 коннектор металл (6E категория)", price: 1000 },
-            { name: "RJ-45 коннектор пластмасса (6E категория)", price: 500 },
-            { name: "Штеккер питания мама (хвостик питания)", price: 5000 },
-            { name: "Штеккер питания папа (хвостик питания)", price: 5000 },
-        ]
-        "ЭЛЕКТРОЗАМКИ": [
-            { name: "ЭМЗ - S214+CARD; По карточке, с брелком; Электронный, электромоторный RFID замок (Китай)", price: 380000 },
-            { name: "Электро механич. замок ANDEL - металл нержавейка", price: 450000 },
-            { name: "Электро механич. замок COUGAR - металл нержавейка", price: 400000 },
-            { name: "Электромагнитный замок с усилием удерживания 120 КГ", price: 350000 },
-            { name: "Электромеханическая защелка Полис 19", price: 750000 },
-            { name: "Электромеханический замок ЭМЗ - 12М (Китай)", price: 380000 },
-        ]
-        "ЭЛЕКТРОТОВАРЫ": [
-            { name: "Автомат 16А; Выключатель автоматический GENERICA", price: 15000 },
-            { name: "Автомат 25А; Выключатель автоматический GENERICA", price: 17000 },
-            { name: "Автомат 32А; Выключатель автоматический GENERICA", price: 19000 },
-            { name: "Автомат 40А; Выключатель автоматический GENERICA", price: 20000 },
-            { name: "Автомат 50А; Выключатель автоматический GENERICA", price: 22000 },
-            { name: "Вилка", price: 7000 },
-            { name: "Кольцо для розетки под бетон; подрозетник под бетон", price: 1500 },
-            { name: "Кольцо для розетки; подрозетник", price: 1000 },
-            { name: "Коробка на два модуля под автомат наружная; Бокс навесной для автомата", price: 5000 },
-            { name: "Коробка на четыре модуля под автомат наружная; Бокс навесной для автомата", price: 8000 },
-            { name: "Фотореле 6A (AELIFV)", price: 55000 },
-            { name: "Фотореле PS-2", price: 50000 },
-        ]
-        "Лампы, светильники, прожекторы": [
-            { name: "LED-Прожектор 20 W 224-03267c датчиком движения", price: 270000 },
-            { name: "Led лампа 10W; TECHNO LED", price: 12000 },
-            { name: "Led лампа 12W; TECHNO LED", price: 13000 },
-            { name: "Led лампа 5W; TECHNO LED", price: 9000 },
-            { name: "Led лампа 7W; TECHNO LED", price: 11000 },
-            { name: "Led лампа для люстры 12W; Светодиодная свеча; TECHNO LED", price: 12000 },
-            { name: "Led лампа для люстры 16W; Led com lmp; TECHNO LED", price: 14000 },
-            { name: "Led прожектор уличный TECHNO LED 100W", price: 135000 },
-            { name: "Прожектор Dusel 50W; Модель: P1-50", price: 90000 },
-            { name: "Светильник уличный светодиодный, с солнечной панелью, SOLAR LIGHT, Мощность 100 Вт", price: 305000 },
-            { name: "Светильник уличный светодиодный, с солнечной панелью, SOLAR LIGHT, Мощность 200 Вт", price: 550000 },
-            { name: "Светильник уличный светодиодный, с солнечной панелью, SOLAR LIGHT, Мощность 50 Вт", price: 260000 },
-        ]
-        "РОЗЕТКИ И ВЫКЛЮЧАТЕЛИ": [
-            { name: "Выключатель двойной внутренний; Vesta; Веста", price: 18000 },
-            { name: "Включатель двойной внутренний; Визаж; Visage", price: 15000 },
-            { name: "Включатель двойной наружный; Визаж; Visage", price: 15000 },
-            { name: "Включатель одинарный внутренний; Vesta; Веста", price: 15000 },
-            { name: "Включатель одинарный внутренний; Визаж; Visage", price: 12000 },
-            { name: "Включатель одинарный наружный; Визаж; Visage", price: 12000 },
-            { name: "Розетка двойная внутренняя; Vesta; Веста", price: 20000 },
-            { name: "Розетка двойная внутренняя; Визаж; Visage", price: 15000 },
-            { name: "Розетка двойная наружная; Визаж; Visage", price: 15000 },
-            { name: "Розетка для телевизора внутренняя; Vesta; Веста", price: 30000 },
-            { name: "Розетка интернет внутренняя; Qimi", price: 40000 },
-            { name: "Розетка одинарная внутренняя; Vesta; Веста", price: 15000 },
-            { name: "Розетка одинарная внутренняя; Визаж; Visage", price: 12000 },
-            { name: "Розетка одинарная наружная; Визаж; Visage", price: 12000 },
-        ]
-    ];
+    };
 
     let cart = [];
+    let currentCategory = Object.keys(catalog)[0];
 
-    // 1. Наполняем список при запуске
-    function init() {
-        const s = document.getElementById('pSelect');
-        products.forEach(item => {
-            let opt = document.createElement('option');
-            opt.value = item.price;
-            opt.text = item.name + " (" + item.price.toLocaleString() + " сум)";
-            s.add(opt);
+    // Отрисовка бокового меню
+    function renderSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        Object.keys(catalog).forEach((cat, index) => {
+            const div = document.createElement('div');
+            div.className = 'cat-item' + (index === 0 ? ' active' : '');
+            div.innerText = cat;
+            div.onclick = () => {
+                currentCategory = cat;
+                document.querySelectorAll('.cat-item').forEach(el => el.classList.remove('active'));
+                div.classList.add('active');
+                document.getElementById('searchInput').value = ''; // Сброс поиска
+                updateProductList();
+            };
+            sidebar.appendChild(div);
         });
     }
 
-    // 2. Кнопка "Добавить"
+    // Обновление списка товаров
+    function updateProductList(filteredArr = null) {
+        const pSelect = document.getElementById('pSelect');
+        pSelect.innerHTML = '';
+        const items = filteredArr || catalog[currentCategory];
+
+        items.forEach(item => {
+            const opt = document.createElement('option');
+            opt.value = item.price;
+            opt.dataset.name = item.name;
+            opt.text = `${item.name} (${item.price.toLocaleString()} сум)`;
+            pSelect.add(opt);
+        });
+    }
+
+    // Фильтр поиска
+    function filterProducts() {
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = catalog[currentCategory].filter(p => 
+            p.name.toLowerCase().includes(term)
+        );
+        updateProductList(filtered);
+    }
+
+    // Добавление в корзину
     function addItem() {
         const s = document.getElementById('pSelect');
-        const name = s.options[s.selectedIndex].text.split(" (")[0];
+        if (s.options.length === 0) return;
+
+        const name = s.options[s.selectedIndex].dataset.name;
         const price = parseFloat(s.value);
         const qty = parseInt(document.getElementById('qInput').value) || 0;
 
         if (qty > 0) {
             cart.push({ n: name, q: qty, s: price * qty });
-            render();
+            renderCart();
         }
     }
 
-    // 3. Обновление таблицы
-    function render() {
+    // Отрисовка таблицы сметы
+    function renderCart() {
         const b = document.getElementById('resBody');
         let h = '', total = 0;
         cart.forEach(i => {
-            h += "<tr><td>" + i.n + "</td><td>" + i.q + " шт.</td><td>" + i.s.toLocaleString() + " сум</td></tr>";
+            h += `<tr><td>${i.n}</td><td>${i.q} шт.</td><td>${i.s.toLocaleString()} сум</td></tr>`;
             total += i.s;
         });
         b.innerHTML = h;
         document.getElementById('finalSum').innerText = total.toLocaleString() + " сум";
     }
-    // 4. Очистка
+
     function clearAll() {
-        cart = [];
-        render();
+        if(confirm("Очистить всю смету?")) {
+            cart = [];
+            renderCart();
+        }
     }
 
-    init();
-    function renderSidebar() {
-    const sidebar = document.getElementById('sidebar');
-    sidebar.innerHTML = '<h3>Разделы</h3>'; // Заголовок меню
-
-    Object.keys(catalog).forEach((categoryName) => {
-        const btn = document.createElement('div');
-        btn.className = 'cat-item';
-        btn.innerText = categoryName;
-        
-        // При клике - обновляем товары
-        btn.onclick = () => {
-            updateProductList(categoryName);
-            // Подсветка активной кнопки
-            document.querySelectorAll('.cat-item').forEach(el => el.classList.remove('active'));
-            btn.classList.add('active');
-        };
-        sidebar.appendChild(btn);
-    });
-}
-
-// Эта функция меняет товары в твоем выпадающем списке pSelect
-function updateProductList(cat) {
-    const pSelect = document.getElementById('pSelect');
-    pSelect.innerHTML = ''; // Очищаем старые товары
-    
-    catalog[cat].forEach(item => {
-        const option = document.createElement('option');
-        option.value = item.price;
-        option.text = `${item.name} (${item.price.toLocaleString()} сум);
-        pSelect.add(option)`;
-    });
-}
-
-// Запускаем всё при загрузке страницы
-renderSidebar();
-if (Object.keys(catalog).length > 0) {
-    updateProductList(Object.keys(catalog)[0]);
-}
+    // Старт
+    renderSidebar();
+    updateProductList();
 </script>
 
 </body>
