@@ -63,7 +63,6 @@
 <div class="sidebar" id="sidebar">
     <h3>Разделы</h3>
     </div>
-
 <div class="main-content">
     <div class="calc-card">
         <h2>Смета ELVID</h2>
@@ -83,6 +82,11 @@
             <input type="number" id="qInput" value="1" min="1">
         </div>
 
+        <div class="row" style="display: flex; align-items: center; gap: 10px; background: #fffbe6; padding: 10px; border-radius: 8px; border: 1px solid #ffe58f; margin-bottom: 20px;">
+            <input type="checkbox" id="serviceCheckbox" style="width: 20px; height: 20px; cursor: pointer;" onchange="renderCart()">
+            <label for="serviceCheckbox" style="margin: 0; cursor: pointer; font-size: 14px;">Добавить услугу "Сервис" (+200,000 сум)</label>
+        </div>
+
         <button class="btn-add" onclick="addItem()">➕ Добавить в смету</button>
 
         <table class="res-table">
@@ -91,7 +95,7 @@
                     <th>Товар</th>
                     <th>Кол-во</th>
                     <th>Сумма</th>
-                    <th></tr> </tr>
+                    <th style="width: 30px;"></th> </tr>
             </thead>
             <tbody id="resBody"></tbody>
         </table>
@@ -104,7 +108,7 @@
         <button class="btn-reset" onclick="clearAll()">Очистить список</button>
     </div>
 </div>
-
+    
 <script>
     const catalog = {
         "HDMI/VGA переходники и Удлинители": [
@@ -456,25 +460,26 @@
     let cart = [];
     let currentCategory = Object.keys(catalog)[0];
 
-    // Отрисовка бокового меню
+    // 1. Отрисовка сайдбара
     function renderSidebar() {
         const sidebar = document.getElementById('sidebar');
+        sidebar.innerHTML = '<h3>Разделы</h3>'; // Очистка перед рендером
         Object.keys(catalog).forEach((cat, index) => {
             const div = document.createElement('div');
-            div.className = 'cat-item' + (index === 0 ? ' active' : '');
+            div.className = 'cat-item' + (cat === currentCategory ? ' active' : '');
             div.innerText = cat;
             div.onclick = () => {
                 currentCategory = cat;
                 document.querySelectorAll('.cat-item').forEach(el => el.classList.remove('active'));
                 div.classList.add('active');
-                document.getElementById('searchInput').value = ''; // Сброс поиска
+                document.getElementById('searchInput').value = ''; 
                 updateProductList();
             };
             sidebar.appendChild(div);
         });
     }
 
-    // Обновление списка товаров
+    // 2. Обновление списка товаров в Select
     function updateProductList(filteredArr = null) {
         const pSelect = document.getElementById('pSelect');
         pSelect.innerHTML = '';
@@ -489,37 +494,29 @@
         });
     }
 
-    // Фильтр поиска
+    // 3. Глобальный поиск (Серчер)
     function filterProducts() {
-    const term = document.getElementById('searchInput').value.toLowerCase();
-    
-    // Если поиск пустой, возвращаем товары текущей категории
-    if (term === "") {
-        updateProductList(); 
-        return;
-    }
+        const term = document.getElementById('searchInput').value.toLowerCase();
+        if (term === "") {
+            updateProductList();
+            return;
+        }
 
-    let globalFiltered = [];
-
-    // Проходим циклом по всем категориям в объекте catalog
-    Object.keys(catalog).forEach(category => {
-        catalog[category].forEach(product => {
-            // Если имя товара содержит поисковый запрос
-            if (product.name.toLowerCase().includes(term)) {
-                // Добавляем пометку категории к названию, чтобы не запутаться
-                globalFiltered.push({
-                    name: `[${category}] ${product.name}`, 
-                    price: product.price
-                });
-            }
+        let globalFiltered = [];
+        Object.keys(catalog).forEach(category => {
+            catalog[category].forEach(product => {
+                if (product.name.toLowerCase().includes(term)) {
+                    globalFiltered.push({
+                        name: `[${category}] ${product.name}`,
+                        price: product.price
+                    });
+                }
+            });
         });
-    });
-
-    // Выводим все найденные товары во всех категориях
-    updateProductList(globalFiltered);
+        updateProductList(globalFiltered);
     }
 
-    // Добавление в корзину
+    // 4. Добавление в смету
     function addItem() {
         const s = document.getElementById('pSelect');
         if (s.options.length === 0) return;
@@ -534,68 +531,62 @@
         }
     }
 
-    // Отрисовка таблицы сметы
+    // 5. Удаление одного элемента (X)
+    function removeItem(index) {
+        cart.splice(index, 1);
+        renderCart();
+    }
+
+    // 6. Отрисовка корзины и расчет ИТОГО + СЕРВИС
     function renderCart() {
         const b = document.getElementById('resBody');
-        let h = '', total = 0;
-        cart.forEach(i => {
-            h += `<tr><td>${i.n}</td><td>${i.q} шт.</td><td>${i.s.toLocaleString()} сум</td></tr>`;
+        let h = '';
+        let total = 0;
+
+        // Товары
+        cart.forEach((i, index) => {
+            h += `
+            <tr>
+                <td>${i.n}</td>
+                <td>${i.q} шт.</td>
+                <td>${i.s.toLocaleString()} сум</td>
+                <td style="text-align:center;">
+                    <button onclick="removeItem(${index})" style="background:none; border:none; color:red; cursor:pointer; font-weight:bold; font-size:16px;">✕</button>
+                </td>
+            </tr>`;
             total += i.s;
         });
+
+        // Логика Чекбокса "Сервис"
+        const isServiceActive = document.getElementById('serviceCheckbox').checked;
+        if (isServiceActive) {
+            total += 200000;
+            h += `
+            <tr style="background: #fffbe6; font-weight: bold;">
+                <td>🛠 Услуга: Сервис</td>
+                <td>1</td>
+                <td>200,000 сум</td>
+                <td></td>
+            </tr>`;
+        }
+
         b.innerHTML = h;
         document.getElementById('finalSum').innerText = total.toLocaleString() + " сум";
     }
 
+    // 7. Полная очистка
     function clearAll() {
         if(confirm("Очистить всю смету?")) {
             cart = [];
+            document.getElementById('serviceCheckbox').checked = false; // Сбрасываем и сервис
             renderCart();
         }
     }
 
-    // Старт
+    // Старт приложения
     renderSidebar();
     updateProductList();
-// 1. Функция удаления товара из сметы
-function removeItem(index) {
-    cart.splice(index, 1); // Удаляем 1 элемент по индексу
-    renderCart(); // Перерисовываем таблицу
-}
-
-// 2. Обновленная функция отрисовки сметы
-function renderCart() {
-    const b = document.getElementById('resBody');
-    let h = '';
-    let total = 0;
-
-    cart.forEach((i, index) => {
-        h += `
-        <tr>
-            <td>${i.n}</td>
-            <td>${i.q} шт.</td>
-            <td>${i.s.toLocaleString()} сум</td>
-            <td>
-                <button onclick="removeItem(${index})" style="background:none; border:none; color:red; cursor:pointer; font-weight:bold;">✕</button>
-            </td>
-        </tr>`;
-        total += i.s;
-    });
-
-    // ПРОВЕРКА ЧЕКБОКСА: Если галочка стоит, прибавляем 200 000
-    const isServiceActive = document.getElementById('serviceCheckbox').checked;
-    if (isServiceActive) {
-        total += 200000;
-        h += `
-        <tr style="background: #fffbe6; font-weight: bold;">
-            <td>Услуга: Сервис</td>
-            <td>1</td>
-            <td>200,000 сум</td>
-            <td></td>
-        </tr>`;
-    }
-
-    b.innerHTML = h;
-    document.getElementById('finalSum').innerText = total.toLocaleString() + " сум";
+   
 }
 </script>
 
