@@ -30,7 +30,7 @@
 
         /* Основной контент */
         .main-content { flex-grow: 1; padding: 20px; display: flex; justify-content: center; }
-        .calc-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%; max-width: 500px; height: fit-content; }
+        .calc-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); width: 100%; max-width: 550px; height: fit-content; }
         
         h2 { text-align: center; color: #1a73e8; margin-top: 0; }
         .row { margin-bottom: 15px; }
@@ -38,61 +38,67 @@
         
         select, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
         
-        /* Поиск */
-        .search-box { margin-bottom: 10px; background: #fffbe6; border: 1px solid #ffe58f; }
-
-        .btn-add { background: #28a745; color: white; border: none; width: 100%; padding: 15px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .btn-add { background: #28a745; color: white; border: none; width: 100%; padding: 15px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .btn-add:hover { background: #218838; }
 
         .res-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
         .res-table th, .res-table td { text-align: left; padding: 10px; border-bottom: 1px solid #eee; font-size: 14px; }
+        .res-table th { background: #f8f9fa; color: #555; }
         
+        /* Стиль для кнопки удаления X */
+        .btn-remove { background: none; border: none; color: #d93025; cursor: pointer; font-weight: bold; font-size: 18px; padding: 0 5px; }
+        .btn-remove:hover { color: #a50e0e; }
+
         .total-box { margin-top: 20px; padding: 15px; background: #e8f0fe; border-radius: 8px; text-align: right; }
         .total-val { font-size: 24px; font-weight: bold; color: #d93025; }
         
         .btn-reset { background: none; border: 1px solid #ccc; color: #999; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-top: 15px; display: block; margin-left: auto; }
+        .btn-reset:hover { background: #f8f9fa; color: #666; }
     </style>
 </head>
 <body>
 
 <div class="sidebar" id="sidebar">
     <h3>Разделы</h3>
-    </div>
+</div>
+
 <div class="main-content">
     <div class="calc-card">
-    <h2>Смета ELVID</h2>
-    
-    <div class="row">
-        <label>🔍 Поиск товара:</label>
-        <input type="text" id="searchInput" placeholder="Введите название..." oninput="filterProducts()">
-    </div>
+        <h2>Смета ELVID</h2>
+        
+        <div class="row">
+            <label>🔍 Поиск товара:</label>
+            <input type="text" id="searchInput" placeholder="Введите название для поиска по всем категориям..." oninput="filterProducts()">
+        </div>
 
-    <div class="row">
-        <label>Выберите оборудование:</label>
-        <select id="pSelect"></select>
-    </div>
+        <div class="row">
+            <label>Выберите оборудование:</label>
+            <select id="pSelect"></select>
+        </div>
 
-    <div class="row">
-        <label>Количество (шт):</label>
-        <input type="number" id="qInput" value="1" min="1">
-    </div>
+        <div class="row">
+            <label>Количество (шт):</label>
+            <input type="number" id="qInput" value="1" min="1">
+        </div>
 
-    <div class="row" style="display: flex; align-items: center; gap: 10px; padding: 5px 0 15px 0;">
-        <input type="checkbox" id="serviceCheckbox" style="width: 18px; height: 18px; cursor: pointer;" onchange="renderCart()">
-        <label for="serviceCheckbox" style="margin: 0; cursor: pointer; font-size: 14px; color: #1a73e8; font-weight: bold;">+ Услуга "Сервис" (200,000 сум)</label>
-    </div>
+        <div class="row" style="display: flex; align-items: center; gap: 10px; padding: 5px 0 10px 0;">
+            <input type="checkbox" id="serviceCheckbox" style="width: 20px; height: 20px; cursor: pointer;" onchange="renderCart()">
+            <label for="serviceCheckbox" style="margin: 0; cursor: pointer; font-size: 14px; color: #1a73e8; font-weight: bold;">+ Услуга "Сервис" (200,000 сум)</label>
+        </div>
 
-    <button class="btn-add" onclick="addItem()">➕ Добавить в смету</button>
-    <table class="res-table">
+        <button class="btn-add" onclick="addItem()">➕ Добавить в смету</button>
+
+        <table class="res-table">
             <thead>
                 <tr>
                     <th>Товар</th>
                     <th>Кол-во</th>
                     <th>Сумма</th>
-                    <th style="width: 30px;"></th> </tr>
-        </thead>
-        <tbody id="resBody"></tbody>
-    </table>
+                    <th style="width: 30px;"></th>
+                </tr>
+            </thead>
+            <tbody id="resBody"></tbody>
+        </table>
 
         <div class="total-box">
             <div style="color: #1a73e8; font-size: 14px; font-weight: bold;">ИТОГО К ОПЛАТЕ:</div>
@@ -454,11 +460,10 @@
     let cart = [];
     let currentCategory = Object.keys(catalog)[0];
 
-    // 1. Отрисовка сайдбара
     function renderSidebar() {
         const sidebar = document.getElementById('sidebar');
-        sidebar.innerHTML = '<h3>Разделы</h3>'; // Очистка перед рендером
-        Object.keys(catalog).forEach((cat, index) => {
+        sidebar.innerHTML = '<h3>Разделы</h3>';
+        Object.keys(catalog).forEach(cat => {
             const div = document.createElement('div');
             div.className = 'cat-item' + (cat === currentCategory ? ' active' : '');
             div.innerText = cat;
@@ -466,14 +471,13 @@
                 currentCategory = cat;
                 document.querySelectorAll('.cat-item').forEach(el => el.classList.remove('active'));
                 div.classList.add('active');
-                document.getElementById('searchInput').value = ''; 
+                document.getElementById('searchInput').value = '';
                 updateProductList();
             };
             sidebar.appendChild(div);
         });
     }
 
-    // 2. Обновление списка товаров в Select
     function updateProductList(filteredArr = null) {
         const pSelect = document.getElementById('pSelect');
         pSelect.innerHTML = '';
@@ -488,29 +492,21 @@
         });
     }
 
-    // 3. Глобальный поиск (Серчер)
     function filterProducts() {
         const term = document.getElementById('searchInput').value.toLowerCase();
-        if (term === "") {
-            updateProductList();
-            return;
-        }
+        if (term === "") { updateProductList(); return; }
 
         let globalFiltered = [];
         Object.keys(catalog).forEach(category => {
             catalog[category].forEach(product => {
                 if (product.name.toLowerCase().includes(term)) {
-                    globalFiltered.push({
-                        name: `[${category}] ${product.name}`,
-                        price: product.price
-                    });
+                    globalFiltered.push({ name: `[${category}] ${product.name}`, price: product.price });
                 }
             });
         });
         updateProductList(globalFiltered);
     }
 
-    // 4. Добавление в смету
     function addItem() {
         const s = document.getElementById('pSelect');
         if (s.options.length === 0) return;
@@ -525,38 +521,28 @@
         }
     }
 
-    // 5. Удаление одного элемента (X)
     function removeItem(index) {
         cart.splice(index, 1);
         renderCart();
     }
 
-    // 6. Отрисовка корзины и расчет ИТОГО + СЕРВИС
     function renderCart() {
         const b = document.getElementById('resBody');
-        let h = '';
-        let total = 0;
+        let h = '', total = 0;
 
-        // Товары
         cart.forEach((i, index) => {
-            h += `
-            <tr>
+            h += `<tr>
                 <td>${i.n}</td>
                 <td>${i.q} шт.</td>
                 <td>${i.s.toLocaleString()} сум</td>
-                <td style="text-align:center;">
-                    <button onclick="removeItem(${index})" style="background:none; border:none; color:red; cursor:pointer; font-weight:bold; font-size:16px;">✕</button>
-                </td>
+                <td><button class="btn-remove" onclick="removeItem(${index})">✕</button></td>
             </tr>`;
             total += i.s;
         });
 
-        // Логика Чекбокса "Сервис"
-        const isServiceActive = document.getElementById('serviceCheckbox').checked;
-        if (isServiceActive) {
+        if (document.getElementById('serviceCheckbox').checked) {
             total += 200000;
-            h += `
-            <tr style="background: #fffbe6; font-weight: bold;">
+            h += `<tr style="background:#fffbe6; font-weight:bold;">
                 <td>🛠 Услуга: Сервис</td>
                 <td>1</td>
                 <td>200,000 сум</td>
@@ -568,18 +554,17 @@
         document.getElementById('finalSum').innerText = total.toLocaleString() + " сум";
     }
 
-    // 7. Полная очистка
     function clearAll() {
         if(confirm("Очистить всю смету?")) {
             cart = [];
-            document.getElementById('serviceCheckbox').checked = false; // Сбрасываем и сервис
+            document.getElementById('serviceCheckbox').checked = false;
             renderCart();
         }
     }
 
-    // Старт приложения
     renderSidebar();
     updateProductList();
+</script>
 
 </body>
 </html>
