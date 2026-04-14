@@ -547,6 +547,41 @@
     // Старт
     renderSidebar();
     updateProductList();
+// Функция перерисовки таблицы с кнопкой удаления
+function renderTable() {
+    const tableBody = document.querySelector('table tbody'); // Убедись, что у тебя есть <tbody> в таблице
+    const totalDisplay = document.getElementById('totalSum');
+    
+    tableBody.innerHTML = '';
+    let total = 0;
+
+    cart.forEach((item, index) => {
+        const itemTotal = item.price * item.quantity;
+        total += itemTotal;
+
+        const row = 
+            <tr>
+                <td>${item.name}</td>
+                <td>${item.quantity} шт.</td>
+                <td>${itemTotal.toLocaleString()} сум</td>
+                <td style="text-align: center;">
+                    <span onclick="removeItem(${index})" style="cursor:pointer; color: red; font-weight: bold; font-size: 18px;" title="Удалить">
+                        ✕
+                    </span>
+                </td>
+            </tr>
+        ;
+        tableBody.innerHTML += row;
+    });
+
+    totalDisplay.innerText = total.toLocaleString() + " сум";
+}
+
+// Функция удаления товара по его индексу
+function removeItem(index) {
+    cart.splice(index, 1); // Удаляем 1 элемент из массива по индексу
+    renderTable(); // Сразу обновляем таблицу
+}
 </script>
 
 </body>
