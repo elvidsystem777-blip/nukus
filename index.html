@@ -574,52 +574,96 @@
 
     renderSidebar();
     updateProductList();
-    
+
 function saveAsPDF() {
     const name = document.getElementById('clientName').value || "Не указан";
     const phone = document.getElementById('clientPhone').value || "Не указан";
     const date = new Date().toLocaleString();
     const total = document.getElementById('finalSum').innerText;
 
-    // Создаем временный блок для печати (чтобы отчет выглядел красиво)
+    // Проверяем, есть ли товары в смете
+    if (cart.length === 0 && !document.getElementById('serviceCheckbox').checked) {
+        alert("Смета пуста! Добавьте товары перед сохранением.");
+        return;
+    }
+
+    // Формируем строки таблицы вручную из массива данных (без кнопок удаления)
+    let tableRows = '';
+    cart.forEach(i => {
+        tableRows += `
+            <tr>
+                <td style="border: 1px solid #ddd; padding: 8px;">${i.n}</td>
+                <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">${i.q} шт.</td>
+                <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${i.s.toLocaleString()} сум</td>
+            </tr>`;
+    });
+
+    // Добавляем сервис, если он выбран
+    if (document.getElementById('serviceCheckbox').checked) {
+        tableRows += `
+            <tr style="background-color: #fffbe6; font-weight: bold;">
+                <td style="border: 1px solid #ddd; padding: 8px;">🛠 Услуга: Сервис</td>
+                <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">1</td>
+                <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">200,000 сум</td>
+            </tr>`;
+    }
+
+    // Создаем чистый макет для PDF
     const element = document.createElement('div');
     element.innerHTML = `
-        <div style="padding: 20px; font-family: Arial;">
-            <h1 style="color: #1a73e8; text-align: center;">СМЕТА ELVID</h1>
-            <hr>
-            <p><strong>Дата:</strong> ${date}</p>
-            <p><strong>Клиент:</strong> ${name}</p>
-            <p><strong>Телефон:</strong> ${phone}</p>
-            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
-                <thead style="background: #f0f0f0;">
-                    <tr>
-                        <th style="border: 1px solid #ddd; padding: 8px;">Товар</th>
-                        <th style="border: 1px solid #ddd; padding: 8px;">Кол-во</th>
-                        <th style="border: 1px solid #ddd; padding: 8px;">Сумма</th>
+        <div style="padding: 20px; font-family: DejaVu Sans, Arial, sans-serif;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <h1 style="color: #1a73e8; margin: 0;">СМЕТА ELVID</h1>
+                <p style="color: #666;">Отчет по заказу оборудования</p>
+            </div>
+            
+            <div style="margin-bottom: 20px; border: 1px solid #eee; padding: 10px; border-radius: 5px;">
+                <p><strong>Дата заказа:</strong> ${date}</p>
+                <p><strong>Клиент:</strong> ${name}</p>
+                <p><strong>Телефон:</strong> ${phone}</p>
+            </div>
+
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                <thead>
+                    <tr style="background-color: #1a73e8; color: white;">
+                        <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Наименование товара</th>
+                        <th style="border: 1px solid #ddd; padding: 10px; text-align: center; width: 80px;">Кол-во</th>
+                        <th style="border: 1px solid #ddd; padding: 10px; text-align: right; width: 120px;">Сумма</th>
                     </tr>
                 </thead>
                 <tbody>
-                    ${document.getElementById('resBody').innerHTML}
+                    ${tableRows}
                 </tbody>
             </table>
-            <h2 style="text-align: right; margin-top: 30px; color: #d93025;">ИТОГО: ${total}</h2>
-            <p style="font-size: 10px; color: #888; margin-top: 50px; text-align: center;">Сгенерировано в приложении ELVID Смета</p>
+
+            <div style="text-align: right; margin-top: 30px;">
+                <div style="font-size: 14px; color: #555;">ИТОГО К ОПЛАТЕ:</div>
+                <div style="font-size: 24px; font-weight: bold; color: #d93025;">${total}</div>
+            </div>
+
+            <div style="margin-top: 50px; border-top: 1px solid #eee; pt: 10px; text-align: center; font-size: 10px; color: #aaa;">
+                Документ сформирован автоматически в приложении ELVID. Не является финансовым чеком.
+            </div>
         </div>
     `;
 
     // Настройки PDF
     const opt = {
-        margin:       10,
-        filename:     `Смета_${name}_${new Date().toLocaleDateString()}.pdf`,
+        margin:       [10, 10, 10, 10],
+        filename:     `Elvid_Smeta_${name.replace(/\s+/g, '_')}.pdf`,
         image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2 },
+        html2canvas:  { 
+            scale: 2, 
+            useCORS: true, 
+            logging: false 
+        },
         jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
     };
 
-    // Запуск генерации
+    // Запуск сохранения
     html2pdf().set(opt).from(element).save();
 }
-    
+
 </script>
 
 </body>
