@@ -65,30 +65,29 @@
     </div>
 <div class="main-content">
     <div class="calc-card">
-        <h2>Смета ELVID</h2>
-        
-        <div class="row">
-            <label>🔍 Поиск товара:</label>
-            <input type="text" id="searchInput" placeholder="Введите название..." oninput="filterProducts()">
-        </div>
+    <h2>Смета ELVID</h2>
+    
+    <div class="row">
+        <label>🔍 Поиск товара:</label>
+        <input type="text" id="searchInput" placeholder="Введите название..." oninput="filterProducts()">
+    </div>
 
-        <div class="row">
-            <label>Выберите оборудование:</label>
-            <select id="pSelect"></select>
-        </div>
+    <div class="row">
+        <label>Выберите оборудование:</label>
+        <select id="pSelect"></select>
+    </div>
 
-        <div class="row">
-            <label>Количество (шт):</label>
-            <input type="number" id="qInput" value="1" min="1">
-        </div>
+    <div class="row">
+        <label>Количество (шт):</label>
+        <input type="number" id="qInput" value="1" min="1">
+    </div>
 
-        <div class="row" style="display: flex; align-items: center; gap: 10px; background: #fffbe6; padding: 10px; border-radius: 8px; border: 1px solid #ffe58f; margin-bottom: 20px;">
-            <input type="checkbox" id="serviceCheckbox" style="width: 20px; height: 20px; cursor: pointer;" onchange="renderCart()">
-            <label for="serviceCheckbox" style="margin: 0; cursor: pointer; font-size: 14px;">Добавить услугу "Сервис" (+200,000 сум)</label>
-        </div>
+    <div class="row" style="display: flex; align-items: center; gap: 10px; padding: 5px 0 15px 0;">
+        <input type="checkbox" id="serviceCheckbox" style="width: 18px; height: 18px; cursor: pointer;" onchange="renderCart()">
+        <label for="serviceCheckbox" style="margin: 0; cursor: pointer; font-size: 14px; color: #1a73e8;">+ Услуга "Сервис" (200,000 сум)</label>
+    </div>
 
-        <button class="btn-add" onclick="addItem()">➕ Добавить в смету</button>
-
+    <button class="btn-add" onclick="addItem()">➕ Добавить в смету</button>
         <table class="res-table">
             <thead>
                 <tr>
