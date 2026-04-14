@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ELVID Смета</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         body { font-family: sans-serif; background: #f0f2f5; margin: 0; display: flex; }
         
@@ -100,10 +101,19 @@
             <tbody id="resBody"></tbody>
         </table>
 
+        <div class="row" style="border-top: 1px solid #eee; pt-15; margin-top: 20px;">
+            <label>👤 Данные клиента (для отчета):</label>
+            <input type="text" id="clientName" placeholder="ФИО клиента" style="margin-bottom: 5px;">
+            <input type="text" id="clientPhone" placeholder="+998 00 000 00 00">
+        </div>
+
         <div class="total-box">
             <div style="color: #1a73e8; font-size: 14px; font-weight: bold;">ИТОГО К ОПЛАТЕ:</div>
             <div class="total-val" id="finalSum">0 сум</div>
         </div>
+        <button onclick="saveAsPDF()" style="background: #1a73e8; color: white; border: none; width: 100%; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px;">
+            📄 Сохранить PDF-отчет
+        </button>
 
         <button class="btn-reset" onclick="clearAll()">Очистить список</button>
     </div>
@@ -564,6 +574,52 @@
 
     renderSidebar();
     updateProductList();
+    
+function saveAsPDF() {
+    const name = document.getElementById('clientName').value || "Не указан";
+    const phone = document.getElementById('clientPhone').value || "Не указан";
+    const date = new Date().toLocaleString();
+    const total = document.getElementById('finalSum').innerText;
+
+    // Создаем временный блок для печати (чтобы отчет выглядел красиво)
+    const element = document.createElement('div');
+    element.innerHTML = `
+        <div style="padding: 20px; font-family: Arial;">
+            <h1 style="color: #1a73e8; text-align: center;">СМЕТА ELVID</h1>
+            <hr>
+            <p><strong>Дата:</strong> ${date}</p>
+            <p><strong>Клиент:</strong> ${name}</p>
+            <p><strong>Телефон:</strong> ${phone}</p>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 20px;">
+                <thead style="background: #f0f0f0;">
+                    <tr>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Товар</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Кол-во</th>
+                        <th style="border: 1px solid #ddd; padding: 8px;">Сумма</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${document.getElementById('resBody').innerHTML}
+                </tbody>
+            </table>
+            <h2 style="text-align: right; margin-top: 30px; color: #d93025;">ИТОГО: ${total}</h2>
+            <p style="font-size: 10px; color: #888; margin-top: 50px; text-align: center;">Сгенерировано в приложении ELVID Смета</p>
+        </div>
+    `;
+
+    // Настройки PDF
+    const opt = {
+        margin:       10,
+        filename:     `Смета_${name}_${new Date().toLocaleDateString()}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    // Запуск генерации
+    html2pdf().set(opt).from(element).save();
+}
+    
 </script>
 
 </body>
