@@ -6,147 +6,236 @@
     <title>ELVID Смета</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f7f9; margin: 0; padding: 10px; color: #333; }
-        
-        .calc-card { 
-            background: white; 
-            padding: 20px; 
-            border-radius: 15px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
-            width: 100%; 
-            max-width: 450px; 
-            margin: 0 auto; 
-            box-sizing: border-box; 
+        :root {
+            --primary: #1a73e8;
+            --success: #28a745;
+            --danger: #d93025;
+            --bg: #f4f7f9;
         }
 
-        h2 { text-align: center; color: #1a73e8; margin-bottom: 20px; font-size: 22px; }
-        
-        .section-label { font-size: 12px; font-weight: bold; color: #888; text-transform: uppercase; margin-bottom: 8px; display: block; }
-
-        /* Верхнее меню выбора категории */
-        .category-header { margin-bottom: 20px; }
-        
-        select, input { 
-            width: 100%; 
-            padding: 14px; 
-            margin-bottom: 12px; 
-            border: 1px solid #e0e0e0; 
-            border-radius: 10px; 
-            font-size: 16px; 
-            box-sizing: border-box; 
-            background: #fdfdfd;
+        body { 
+            font-family: -apple-system, system-ui, sans-serif; 
+            background: var(--bg); 
+            margin: 0; 
+            color: #333;
+            overflow-x: hidden;
         }
 
-        input:focus, select:focus { border-color: #1a73e8; outline: none; background: #fff; }
+        /* Кнопка меню сверху */
+        .header-tools {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 60px;
+            background: white;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
 
-        .btn-add { 
-            background: #28a745; 
-            color: white; 
-            border: none; 
-            width: 100%; 
-            padding: 16px; 
-            border-radius: 10px; 
-            font-size: 16px; 
-            font-weight: bold; 
+        .menu-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: bold;
             cursor: pointer;
-            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        /* Таблица сметы */
-        .res-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .res-table td { padding: 12px 8px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
-        .btn-remove { color: #ff4d4d; border: none; background: none; font-size: 18px; cursor: pointer; padding: 5px; }
-
-        .total-box { 
-            margin-top: 20px; 
-            padding: 15px; 
-            background: #f0f7ff; 
-            border-radius: 10px; 
-            text-align: right; 
-            border: 1px dashed #1a73e8;
+        /* Сайдбар (выезжающее меню) */
+        .sidebar {
+            position: fixed;
+            top: 0; left: -280px;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            z-index: 1100;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 5px 0 15px rgba(0,0,0,0.1);
+            overflow-y: auto;
         }
-        .total-val { font-size: 22px; font-weight: bold; color: #d93025; }
+        .sidebar.open { left: 0; }
 
-        /* Блок клиента */
-        .client-info { 
-            margin-top: 25px; 
-            padding-top: 20px; 
-            border-top: 2px solid #f4f7f9; 
-        }
-
-        .btn-save { 
-            background: #1a73e8; 
-            color: white; 
-            border: none; 
-            width: 100%; 
-            padding: 16px; 
-            border-radius: 10px; 
-            font-size: 16px; 
-            font-weight: bold; 
-            box-shadow: 0 4px 6px rgba(26, 115, 232, 0.2);
+        .sidebar-header {
+            background: var(--primary);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        /* Зона для генерации изображения (скрыта) */
+        .cat-item {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        .cat-item.active {
+            background: #e8f0fe;
+            color: var(--primary);
+            font-weight: bold;
+            border-left: 4px solid var(--primary);
+        }
+
+        /* Оверлей */
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4);
+            display: none;
+            z-index: 1050;
+        }
+        .overlay.active { display: block; }
+
+        /* Контент */
+        .main-content {
+            margin-top: 80px;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .calc-card {
+            background: white;
+            width: 100%;
+            max-width: 480px;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+        }
+
+        .section-label { font-size: 11px; font-weight: bold; color: #999; text-transform: uppercase; margin: 15px 0 5px 0; display: block; }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+            background: #fafafa;
+        }
+
+        .btn-add {
+            background: var(--success);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        /* Таблица */
+        .res-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .res-table td { padding: 12px 5px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+        .btn-remove { color: var(--danger); border: none; background: none; font-size: 18px; cursor: pointer; }
+
+        .total-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f7ff;
+            border-radius: 10px;
+            text-align: right;
+            border: 1px dashed var(--primary);
+        }
+        .total-val { font-size: 24px; font-weight: bold; color: var(--danger); }
+
+        .btn-save {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 15px;
+            box-shadow: 0 4px 10px rgba(26, 115, 232, 0.2);
+        }
+
+        /* Скрытая зона для чека */
         #receipt-zone { position: absolute; left: -9999px; width: 400px; background: white; }
     </style>
 </head>
 <body>
 
+<div class="header-tools">
+    <button class="menu-btn" onclick="toggleMenu()">☰ Категории</button>
+</div>
+
+<div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <h3 style="margin:0">Разделы</h3>
+        <span onclick="toggleMenu()" style="cursor:pointer; font-size:24px">×</span>
+    </div>
+    <div id="catList"></div>
+</div>
+
 <div class="main-content">
     <div class="calc-card">
-        <h2>ELVID Смета</h2>
+        <h2 style="text-align:center; color:var(--primary); margin-top:0;">ELVID Смета</h2>
         
-        <div class="category-header">
-            <span class="section-label">Выберите категорию:</span>
-            <select id="catSelect" onchange="changeCategory()"></select>
-        </div>
-
-        <span class="section-label">Поиск и выбор товара:</span>
-        <input type="text" id="searchInput" placeholder="🔍 Быстрый поиск..." oninput="filterProducts()">
+        <span class="section-label">1. Поиск и выбор</span>
+        <input type="text" id="searchInput" placeholder="🔍 Найти товар..." oninput="filterProducts()">
         <select id="pSelect"></select>
         
-        <span class="section-label">Количество:</span>
+        <span class="section-label">2. Количество</span>
         <input type="number" id="qInput" value="1" min="1">
 
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-            <input type="checkbox" id="serviceCheckbox" style="width:22px; height:22px;" onchange="renderCart()">
-            <label for="serviceCheckbox" style="font-size:14px; font-weight:bold; color:#1a73e8;">Услуга: Сервис (+200,000)</label>
+        <div style="display: flex; align-items: center; gap: 10px; margin: 10px 0;">
+            <input type="checkbox" id="serviceCheckbox" style="width:20px; height:20px;" onchange="renderCart()">
+            <label for="serviceCheckbox" style="font-weight:bold; color:var(--primary); font-size:14px;">Услуга: Сервис (+200,000)</label>
         </div>
 
-        <button class="btn-add" onclick="addItem()">➕ Добавить в список</button>
+        <button class="btn-add" onclick="addItem()">➕ Добавить в смету</button>
 
         <table class="res-table">
             <tbody id="resBody"></tbody>
         </table>
 
         <div class="total-box">
-            <div style="font-size: 12px; color: #666;">ИТОГО К ОПЛАТЕ:</div>
+            <span style="font-size:12px; color:#666;">ИТОГО К ОПЛАТЕ:</span>
             <div id="finalSum" class="total-val">0 сум</div>
         </div>
 
-        <div class="client-info">
-            <span class="section-label">Данные заказчика:</span>
+        <div style="margin-top: 25px; border-top: 2px solid #eee; padding-top: 20px;">
+            <span class="section-label">Данные клиента</span>
             <input type="text" id="clientName" placeholder="ФИО клиента">
-            <input type="tel" id="clientPhone" placeholder="+998 00 000 00 00">
-            <button class="btn-save" onclick="takeScreenshot()">💾 Сохранить</button>
+            <input type="tel" id="clientPhone" placeholder="+998 -- --- -- --">
+            <button class="btn-save" onclick="saveAsImage()">💾 Сохранить</button>
         </div>
-
-        <button onclick="clearAll()" style="width:100%; margin-top:15px; background:none; border:none; color:#bbb; font-size:12px;">Сбросить всё</button>
+        
+        <button onclick="clearAll()" style="width:100%; border:none; background:none; color:#bbb; margin-top:15px; cursor:pointer;">Очистить список</button>
     </div>
 </div>
 
 <div id="receipt-zone">
-    <div id="receipt-content" style="padding: 30px; border: 1px solid #ddd;">
-        <h1 style="text-align:center; color:#1a73e8; margin-bottom: 5px;">ELVID</h1>
-        <p style="text-align:center; color:#666; font-size:12px; margin-bottom:20px;">Официальная смета оборудования</p>
-        <div style="font-size:14px; margin-bottom:15px;">
-            <p><strong>Дата:</strong> <span id="rDate"></span></p>
-            <p><strong>Клиент:</strong> <span id="rClient"></span></p>
-            <p><strong>Тел:</strong> <span id="rPhone"></span></p>
+    <div id="receipt-content" style="padding: 30px;">
+        <h1 style="text-align:center; color:#1a73e8; margin-bottom:5px;">ELVID</h1>
+        <p style="text-align:center; color:#888; margin-bottom:20px;">Коммерческое предложение</p>
+        <div style="font-size:14px; margin-bottom:20px; line-height:1.5;">
+            <div><strong>Дата:</strong> <span id="rDate"></span></div>
+            <div><strong>Клиент:</strong> <span id="rClient"></span></div>
+            <div><strong>Телефон:</strong> <span id="rPhone"></span></div>
         </div>
-        <table style="width:100%; border-collapse: collapse; margin-bottom:20px;" id="rTable"></table>
-        <div style="text-align:right; border-top:2px solid #1a73e8; padding-top:10px;">
-            <span style="font-size:18px; font-weight:bold; color:#d93025;" id="rTotal"></span>
+        <table style="width:100%; border-collapse:collapse;" id="rTable"></table>
+        <div style="text-align:right; margin-top:20px; border-top:2px solid #1a73e8; padding-top:10px;">
+            <div style="font-size:22px; font-weight:bold; color:#d93025;" id="rTotal"></div>
         </div>
     </div>
 </div>
@@ -498,36 +587,42 @@
             { name: "Розетка одинарная наружная; Визаж; Visage", price: 12000 }
         ]
     };
-    
-    let cart = [];
+        let cart = [];
+    let currentCategory = Object.keys(catalog)[0];
 
-    // Заполнение верхнего меню категорий
-    function initCategoryMenu() {
-        const catSelect = document.getElementById('catSelect');
-        Object.keys(catalog).forEach(cat => {
-            const opt = document.createElement('option');
-            opt.value = cat;
-            opt.text = cat;
-            catSelect.add(opt);
-        });
-        updateProductList();
+    // Логика меню
+    function toggleMenu() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('overlay').classList.toggle('active');
     }
 
-    function changeCategory() {
-        document.getElementById('searchInput').value = '';
-        updateProductList();
+    function renderSidebar() {
+        const list = document.getElementById('catList');
+        list.innerHTML = '';
+        Object.keys(catalog).forEach(cat => {
+            const div = document.createElement('div');
+            div.className = `cat-item ${cat === currentCategory ? 'active' : ''}`;
+            div.innerText = cat;
+            div.onclick = () => {
+                currentCategory = cat;
+                renderSidebar();
+                updateProductList();
+                toggleMenu();
+                document.getElementById('searchInput').value = '';
+            };
+            list.appendChild(div);
+        });
     }
 
     function updateProductList(filteredArr = null) {
         const pSelect = document.getElementById('pSelect');
-        const cat = document.getElementById('catSelect').value;
         pSelect.innerHTML = '';
-        const items = filteredArr || catalog[cat];
+        const items = filteredArr || catalog[currentCategory];
         items.forEach(item => {
             const opt = document.createElement('option');
             opt.value = item.price;
             opt.dataset.name = item.name;
-            opt.text = `${item.name} (${item.price.toLocaleString()} сум)`;
+            opt.text = `${item.name} (${item.price.toLocaleString()})`;
             pSelect.add(opt);
         });
     }
@@ -538,9 +633,7 @@
         let found = [];
         Object.keys(catalog).forEach(cat => {
             catalog[cat].forEach(p => {
-                if(p.name.toLowerCase().includes(term)) {
-                    found.push({name: `[${cat}] ${p.name}`, price: p.price});
-                }
+                if(p.name.toLowerCase().includes(term)) found.push({name: `[${cat}] ${p.name}`, price: p.price});
             });
         });
         updateProductList(found);
@@ -567,7 +660,7 @@
         cart.forEach((i, idx) => {
             h += `<tr>
                 <td><strong>${i.n}</strong></td>
-                <td style="text-align:center">${i.q} шт</td>
+                <td style="text-align:center">${i.q}шт</td>
                 <td style="text-align:right">${i.s.toLocaleString()}</td>
                 <td style="text-align:right"><button class="btn-remove" onclick="removeItem(${idx})">✕</button></td>
             </tr>`;
@@ -575,14 +668,14 @@
         });
         if(document.getElementById('serviceCheckbox').checked) {
             total += 200000;
-            h += `<tr style="color:#1a73e8; font-weight:bold;"><td>🛠 Сервис</td><td>1</td><td style="text-align:right">200,000</td><td></td></tr>`;
+            h += `<tr style="color:var(--primary); font-weight:bold;"><td>🛠 Сервис</td><td>1</td><td style="text-align:right">200,000</td><td></td></tr>`;
         }
         b.innerHTML = h;
         document.getElementById('finalSum').innerText = total.toLocaleString() + " сум";
     }
 
-    function takeScreenshot() {
-        if(!cart.length) return alert("Добавьте товары в смету!");
+    function saveAsImage() {
+        if(!cart.length) return alert("Смета пуста!");
         
         const name = document.getElementById('clientName').value || "Не указан";
         const phone = document.getElementById('clientPhone').value || "Не указан";
@@ -591,12 +684,12 @@
         document.getElementById('rClient').innerText = name;
         document.getElementById('rPhone').innerText = phone;
         
-        let rows = '<tr style="background:#eee;"><th style="text-align:left;padding:5px">Товар</th><th>Кол</th><th>Сумма</th></tr>';
+        let rows = '<tr style="background:#f4f7f9;"><th style="padding:10px;text-align:left">Товар</th><th>Кол</th><th>Сумма</th></tr>';
         cart.forEach(i => {
-            rows += `<tr><td style="border:1px solid #ddd;padding:8px">${i.n}</td><td style="text-align:center;border:1px solid #ddd;">${i.q}</td><td style="text-align:right;border:1px solid #ddd;">${i.s.toLocaleString()}</td></tr>`;
+            rows += `<tr><td style="border-bottom:1px solid #eee;padding:10px">${i.n}</td><td style="border-bottom:1px solid #eee;text-align:center">${i.q}</td><td style="border-bottom:1px solid #eee;text-align:right">${i.s.toLocaleString()}</td></tr>`;
         });
         if(document.getElementById('serviceCheckbox').checked) {
-            rows += `<tr><td style="border:1px solid #ddd;padding:8px">Сервис</td><td style="text-align:center;border:1px solid #ddd;">1</td><td style="text-align:right;border:1px solid #ddd;">200,000</td></tr>`;
+            rows += `<tr><td style="padding:10px">🛠 Сервис</td><td style="text-align:center">1</td><td style="text-align:right">200,000</td></tr>`;
         }
         
         document.getElementById('rTable').innerHTML = rows;
@@ -604,15 +697,17 @@
 
         html2canvas(document.getElementById('receipt-content')).then(canvas => {
             const link = document.createElement('a');
-            link.download = `Smeta_${name}.png`;
+            link.download = `Smeta_${name.replace(/\s+/g, '_')}.png`;
             link.href = canvas.toDataURL();
             link.click();
         });
     }
 
-    function clearAll() { if(confirm("Очистить текущую смету?")) { cart=[]; renderCart(); } }
+    function clearAll() { if(confirm("Очистить всё?")) { cart=[]; renderCart(); } }
 
-    initCategoryMenu();
+    // Инициализация
+    renderSidebar();
+    updateProductList();
 </script>
 
 </body>
