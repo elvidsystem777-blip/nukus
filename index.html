@@ -55,6 +55,11 @@
 </head>
 <body>
 
+<div class="row" style="display: flex; align-items: center; gap: 10px; background: #fffbe6; padding: 10px; border-radius: 8px; border: 1px solid #ffe58f;">
+    <input type="checkbox" id="serviceCheckbox" style="width: 20px; height: 20px; cursor: pointer;" onchange="renderCart()">
+    <label for="serviceCheckbox" style="margin: 0; cursor: pointer;">Добавить услугу "Сервис" (+200,000 сум)</label>
+</div>
+
 <div class="sidebar" id="sidebar">
     <h3>Разделы</h3>
     </div>
@@ -82,7 +87,11 @@
 
         <table class="res-table">
             <thead>
-                <tr><th>Товар</th><th>Кол-во</th><th>Сумма</th></tr>
+                <tr>
+                    <th>Товар</th>
+                    <th>Кол-во</th>
+                    <th>Сумма</th>
+                    <th></tr> </tr>
             </thead>
             <tbody id="resBody"></tbody>
         </table>
@@ -547,40 +556,46 @@
     // Старт
     renderSidebar();
     updateProductList();
-// Функция перерисовки таблицы с кнопкой удаления
-function renderTable() {
-    const tableBody = document.querySelector('table tbody'); // Убедись, что у тебя есть <tbody> в таблице
-    const totalDisplay = document.getElementById('totalSum');
-    
-    tableBody.innerHTML = '';
-    let total = 0;
-
-    cart.forEach((item, index) => {
-        const itemTotal = item.price * item.quantity;
-        total += itemTotal;
-
-        const row = 
-            <tr>
-                <td>${item.name}</td>
-                <td>${item.quantity} шт.</td>
-                <td>${itemTotal.toLocaleString()} сум</td>
-                <td style="text-align: center;">
-                    <span onclick="removeItem(${index})" style="cursor:pointer; color: red; font-weight: bold; font-size: 18px;" title="Удалить">
-                        ✕
-                    </span>
-                </td>
-            </tr>
-        ;
-        tableBody.innerHTML += row;
-    });
-
-    totalDisplay.innerText = total.toLocaleString() + " сум";
+// 1. Функция удаления товара из сметы
+function removeItem(index) {
+    cart.splice(index, 1); // Удаляем 1 элемент по индексу
+    renderCart(); // Перерисовываем таблицу
 }
 
-// Функция удаления товара по его индексу
-function removeItem(index) {
-    cart.splice(index, 1); // Удаляем 1 элемент из массива по индексу
-    renderTable(); // Сразу обновляем таблицу
+// 2. Обновленная функция отрисовки сметы
+function renderCart() {
+    const b = document.getElementById('resBody');
+    let h = '';
+    let total = 0;
+
+    cart.forEach((i, index) => {
+        h += `
+        <tr>
+            <td>${i.n}</td>
+            <td>${i.q} шт.</td>
+            <td>${i.s.toLocaleString()} сум</td>
+            <td>
+                <button onclick="removeItem(${index})" style="background:none; border:none; color:red; cursor:pointer; font-weight:bold;">✕</button>
+            </td>
+        </tr>`;
+        total += i.s;
+    });
+
+    // ПРОВЕРКА ЧЕКБОКСА: Если галочка стоит, прибавляем 200 000
+    const isServiceActive = document.getElementById('serviceCheckbox').checked;
+    if (isServiceActive) {
+        total += 200000;
+        h += `
+        <tr style="background: #fffbe6; font-weight: bold;">
+            <td>Услуга: Сервис</td>
+            <td>1</td>
+            <td>200,000 сум</td>
+            <td></td>
+        </tr>`;
+    }
+
+    b.innerHTML = h;
+    document.getElementById('finalSum').innerText = total.toLocaleString() + " сум";
 }
 </script>
 
