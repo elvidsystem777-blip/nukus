@@ -173,7 +173,7 @@
 <body>
 
 <div class="header-tools">
-    <button class="menu-btn" onclick="toggleMenu()">☰ Категории</button>
+    <button class="menu-btn" onclick="toggleMenu()">☰</button>
 </div>
 
 <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
@@ -190,7 +190,7 @@
     <div class="calc-card">
         <h2 style="text-align:center; color:var(--primary); margin-top:0;">ELVID Смета</h2>
         
-        <span class="section-label">1. Поиск и выбор</span>
+        <span class="section-label">1. Поиск </span>
         <input type="text" id="searchInput" placeholder="🔍 Найти товар..." oninput="filterProducts()">
         <select id="pSelect"></select>
         
@@ -199,7 +199,7 @@
 
         <div style="display: flex; align-items: center; gap: 10px; margin: 10px 0;">
             <input type="checkbox" id="serviceCheckbox" style="width:20px; height:20px;" onchange="renderCart()">
-            <label for="serviceCheckbox" style="font-weight:bold; color:var(--primary); font-size:14px;">Услуга: Сервис (+200,000)</label>
+            <label for="serviceCheckbox" style="font-weight:bold; color:var(--primary); font-size:14px;">Услуга: Проезд (+200,000)</label>
         </div>
 
         <button class="btn-add" onclick="addItem()">➕ Добавить в смету</button>
@@ -242,6 +242,19 @@
 
 <script>
     const catalog = {
+        "Услуги": [
+            { name: "Демонтаж и монтаж видеорегистратора", price:100000},
+            { name: "Демонтаж-монтаж видео камеры", price:150000},
+            { name: "Демонтаж-монтаж камеры", price:100000},
+            { name: "Диагностика и тестирование видеонаблюдения", price:100000},
+            { name: "Забивание короба", price:5000},
+            { name: "Замена батарейки видеорегистратора", price:50000},
+            { name: "Замена блока питания", price:50000},
+            { name: "Монтаж и подключение монитора/ телевизора", price:150000},
+            { name: "Монтаж и пуско-наладка PTZ камеры", price:500000},
+            { name: "Настройка онлайн видеонаблюдения", price:150000},
+            { name: "Обслуживание домофона", price:200000}
+        ],
         "HDMI/VGA переходники и Удлинители": [
             { name: "(BNC) Video and S-Video to VGA converter", price: 250000 },
             { name: "HDMI 1,5 m", price: 20000},
